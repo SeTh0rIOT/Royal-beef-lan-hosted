@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Royal Beef — LAN 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ---------- Tokens ---------- */
+:root{
+  --ink:#0d0508;
+  --bg:#180a0f;
+  --panel:#22101a;
+  --panel-2:#2c1622;
+  --gold:#e6b95c;
+  --gold-lit:#f7dda4;
+  --gold-dim:#8d6c2f;
+  --red:#d8382c;
+  --bone:#f5ede1;
+  --muted:#b09a8a;
+  --line:rgba(230,185,92,.20);
+  --line-hard:rgba(230,185,92,.42);
+  --shadow:0 18px 46px rgba(0,0,0,.55);
+  --display:'Anton','Haettenschweiler','Arial Narrow',Impact,system-ui,sans-serif;
+  --text:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--bone);
+  font-family:var(--text);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:
+    radial-gradient(1100px 620px at 50% -8%, rgba(230,185,92,.13), transparent 62%),
+    radial-gradient(900px 500px at 92% 108%, rgba(216,56,44,.16), transparent 60%);
+  background-attachment:fixed;
+}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:400;letter-spacing:.01em;line-height:.95;text-transform:uppercase}
+h1{font-size:clamp(34px,6vw,74px)}
+h2{font-size:clamp(24px,3.4vw,38px)}
+h3{font-size:20px}
+p{margin:0 0 12px}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+.stack{display:flex;flex-direction:column;gap:26px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.grow{flex:1}
+.mt{margin-top:26px}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:linear-gradient(180deg,rgba(13,5,8,.97),rgba(13,5,8,.80));
+  backdrop-filter:blur(9px);
+  border-bottom:1px solid var(--line);
+}
+.topbar .wrap{display:flex;align-items:center;gap:20px;height:62px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-size:19px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.brand svg{width:30px;height:22px;flex:none}
+.nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.nav a{
+  padding:7px 13px;border-radius:999px;font-weight:600;font-size:14.5px;
+  color:var(--muted);border:1px solid transparent;
+}
+.nav a:hover{color:var(--bone);background:rgba(230,185,92,.08)}
+.nav a.on{color:var(--ink);background:var(--gold);border-color:var(--gold)}
+
+/* ---------- Hero ---------- */
+.hero{padding:58px 0 34px;position:relative}
+.crest{width:76px;height:52px;color:var(--gold);margin-bottom:16px}
+.hero h1{max-width:16ch}
+.hero .lede{color:var(--muted);max-width:56ch;margin-top:16px;font-size:17px}
+.rule{height:2px;background:linear-gradient(90deg,var(--gold),rgba(230,185,92,0));margin:22px 0 0;border:0}
+
+/* ---------- Slot grid ---------- */
+.slots{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:30px}
+@media(max-width:820px){.slots{grid-template-columns:1fr}}
+.slot{
+  position:relative;display:block;overflow:hidden;
+  border:1px solid var(--line);border-radius:var(--r);
+  background:var(--panel);min-height:196px;
+  box-shadow:var(--shadow);
+  transition:border-color .18s ease, transform .18s ease;
+}
+.slot:hover{border-color:var(--line-hard);transform:translateY(-2px)}
+.slot .art,.slot .art-fb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.slot .art-fb{background:
+  repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 12px,transparent 12px 24px),
+  linear-gradient(140deg,var(--acc,#6b2230),#1a0a11 78%)}
+.slot .scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(13,5,8,.94) 30%,rgba(13,5,8,.55) 68%,rgba(13,5,8,.30))}
+.slot .body{position:relative;padding:20px 22px;display:flex;flex-direction:column;height:100%;min-height:196px}
+.numeral{font-family:var(--display);font-size:15px;letter-spacing:.24em;color:var(--gold);margin-bottom:auto}
+.slot .title{font-family:var(--display);font-size:clamp(26px,3.2vw,38px);text-transform:uppercase;line-height:.96;margin:12px 0 8px;max-width:14ch}
+.slot .meta{color:var(--muted);font-size:14.5px}
+
+/* ---------- Badges ---------- */
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600;
+  border:1px solid var(--line-hard);color:var(--gold);background:rgba(230,185,92,.08);
+}
+.badge.red{color:#ffd7d3;border-color:rgba(216,56,44,.6);background:rgba(216,56,44,.18)}
+.badge.plain{color:var(--muted);border-color:var(--line);background:transparent}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px rgba(216,56,44,.25)}
+
+/* ---------- Panels ---------- */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.panel + .panel{margin-top:18px}
+.panel h2,.panel h3{margin-bottom:14px}
+.sub{color:var(--muted);font-size:14.5px}
+.divider{height:1px;background:var(--line);border:0;margin:18px 0}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:9px;border:1px solid var(--line-hard);
+  background:rgba(230,185,92,.08);color:var(--bone);font-weight:600;cursor:pointer;
+  transition:background .15s ease,border-color .15s ease;
+}
+.btn:hover{background:rgba(230,185,92,.16)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#20120a}
+.btn.gold:hover{background:var(--gold-lit)}
+.btn.danger{border-color:rgba(216,56,44,.55);background:rgba(216,56,44,.12);color:#ffd7d3}
+.btn.danger:hover{background:rgba(216,56,44,.24)}
+.btn.sm{padding:5px 11px;font-size:13.5px;border-radius:7px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ---------- Forms ---------- */
+label.f{display:block;font-size:13.5px;color:var(--muted);margin-bottom:5px;font-weight:600}
+input[type=text],input[type=number],input[type=password],select,textarea{
+  width:100%;padding:9px 11px;border-radius:9px;
+  background:var(--ink);border:1px solid var(--line);color:var(--bone);
+}
+input:focus,select:focus,textarea:focus{border-color:var(--gold-dim);outline:none}
+textarea{min-height:76px;resize:vertical;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}}
+.field{margin-bottom:14px}
+
+/* ---------- Tables ---------- */
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid rgba(230,185,92,.12)}
+th{font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.03em}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.tbl-wrap{overflow-x:auto}
+
+/* ---------- Scoreboard ---------- */
+.board{display:flex;flex-direction:column;gap:9px}
+.rank{
+  display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:16px;
+  padding:13px 18px;border-radius:12px;border:1px solid var(--line);
+  background:linear-gradient(90deg,var(--panel-2),var(--panel));
+  position:relative;overflow:hidden;
+}
+.rank .fill{position:absolute;inset:0;width:var(--w,0%);background:linear-gradient(90deg,rgba(230,185,92,.20),rgba(230,185,92,.02));pointer-events:none}
+.rank > *{position:relative}
+.rank .pos{font-family:var(--display);font-size:30px;color:var(--gold-dim);text-align:center}
+.rank .who{font-family:var(--display);font-size:26px;text-transform:uppercase;letter-spacing:.01em}
+.rank .pts{font-family:var(--display);font-size:32px;color:var(--gold)}
+.rank .pts small{font-family:var(--text);font-size:12px;color:var(--muted);display:block;text-align:right;letter-spacing:.08em;font-weight:600}
+.rank.p1{border-color:var(--line-hard);background:linear-gradient(90deg,rgba(230,185,92,.16),var(--panel))}
+.rank.p1 .pos{color:var(--gold)}
+.rank .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.chip{font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-variant-numeric:tabular-nums}
+
+/* Beamer mode */
+body.big .rank{padding:20px 26px}
+body.big .rank .who{font-size:44px}
+body.big .rank .pts{font-size:52px}
+body.big .rank .pos{font-size:46px}
+body.big .chip{font-size:15px;padding:2px 9px}
+
+/* ---------- Game page ---------- */
+.gamehero{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);min-height:330px;display:flex;align-items:flex-end;box-shadow:var(--shadow)}
+.gamehero .art,.gamehero .art-fb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gamehero .art-fb{background:
+  repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 14px,transparent 14px 28px),
+  linear-gradient(140deg,var(--acc,#6b2230),#150810 78%)}
+.gamehero .scrim{position:absolute;inset:0;background:linear-gradient(0deg,rgba(13,5,8,.96) 8%,rgba(13,5,8,.55) 52%,rgba(13,5,8,.25))}
+.gamehero .body{position:relative;padding:26px 28px;width:100%}
+.gamehero h1{font-size:clamp(30px,5.4vw,62px)}
+.gamelogo{max-width:min(58%,420px);max-height:120px;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.6))}
+
+.tabs{display:flex;gap:8px;margin:20px 0 4px;flex-wrap:wrap}
+.tab{
+  flex:1;min-width:220px;text-align:left;cursor:pointer;
+  padding:13px 16px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel);transition:border-color .15s ease,background .15s ease;
+}
+.tab:hover{border-color:var(--line-hard)}
+.tab.on{border-color:var(--gold);background:rgba(230,185,92,.11)}
+.tab .k{font-size:12px;letter-spacing:.16em;color:var(--muted);font-weight:700;text-transform:uppercase}
+.tab.on .k{color:var(--gold)}
+.tab .n{font-family:var(--display);font-size:22px;text-transform:uppercase;margin-top:3px}
+.tab .m{font-size:13.5px;color:var(--muted)}
+
+/* ---------- Admin ---------- */
+.gate{max-width:420px;margin:70px auto}
+.tabbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.tabbar button{
+  padding:8px 15px;border-radius:9px;border:1px solid transparent;background:transparent;
+  color:var(--muted);font-weight:600;cursor:pointer;
+}
+.tabbar button:hover{color:var(--bone);background:rgba(230,185,92,.07)}
+.tabbar button.on{background:var(--gold);color:#20120a;border-color:var(--gold)}
+.mini{font-size:13px;color:var(--muted)}
+.warn{border-left:3px solid var(--gold-dim);padding:10px 14px;background:rgba(230,185,92,.06);border-radius:0 8px 8px 0;font-size:14px;color:var(--muted)}
+.match{display:grid;grid-template-columns:1fr 62px 16px 62px 1fr auto;gap:9px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(230,185,92,.1)}
+.match .side{font-weight:600}
+.match .side.r{text-align:right}
+.match .vs{text-align:center;color:var(--muted);font-size:13px}
+@media(max-width:700px){.match{grid-template-columns:1fr 56px 14px 56px 1fr;row-gap:4px}.match .del{grid-column:1/-1;justify-self:end}}
+.ordrow{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;background:var(--ink)}
+.ordrow .n{font-family:var(--display);font-size:19px;color:var(--gold-dim);width:26px}
+.ptsout{font-family:var(--display);font-size:19px;color:var(--gold);min-width:44px;text-align:right}
+
+/* ---------- Punktestand: Bühne ---------- */
+.sbstage{
+  position:relative;overflow:hidden;border-radius:18px;
+  border:1px solid var(--line-hard);margin-top:26px;
+  padding:40px 30px 92px;
+  background:
+    radial-gradient(760px 340px at 50% -14%, rgba(230,185,92,.24), transparent 68%),
+    linear-gradient(165deg,#301420 0%,#1d0c13 58%,#150810 100%);
+}
+.sbstage::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(112deg,rgba(230,185,92,.055) 0 2px,transparent 2px 17px);
+}
+.sbstage::before{
+  content:"";position:absolute;left:50%;bottom:-160px;width:660px;height:330px;
+  transform:translateX(-50%);pointer-events:none;
+  background:radial-gradient(closest-side,rgba(230,185,92,.20),transparent 72%);
+}
+.sbcrown{
+  position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);
+  width:min(620px,105%);color:var(--gold);opacity:.085;pointer-events:none;
+}
+.sblaurel{position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:
+    radial-gradient(2px 2px at 12% 30%, rgba(230,185,92,.5), transparent 60%),
+    radial-gradient(2px 2px at 88% 22%, rgba(230,185,92,.4), transparent 60%),
+    radial-gradient(2px 2px at 26% 74%, rgba(230,185,92,.3), transparent 60%),
+    radial-gradient(2px 2px at 72% 66%, rgba(230,185,92,.35), transparent 60%);
+}
+.sbinner{position:relative;text-align:center}
+.sbeyebrow{font-family:var(--display);font-size:14px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase}
+.sbstage h1{margin:12px 0 0;font-size:clamp(40px,7.5vw,88px)}
+.sblead{color:var(--muted);margin-top:14px;font-size:17px}
+.sblead b{color:var(--gold-lit);font-weight:600}
+.sbtools{margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* Treppchen */
+.podium{
+  position:relative;z-index:3;margin:-62px auto 0;padding:0 8px;
+  display:grid;grid-template-columns:1fr 1.28fr 1fr;gap:16px;align-items:end;max-width:900px;
+}
+.pod{
+  position:relative;text-align:center;border-radius:15px;padding:20px 14px 18px;
+  border:1px solid var(--line);box-shadow:var(--shadow);
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+}
+.pod.r1{padding:34px 16px 24px;border-color:var(--line-hard);
+  background:linear-gradient(180deg,rgba(230,185,92,.17),var(--panel) 72%)}
+.pod .crown{position:absolute;left:50%;top:-19px;transform:translateX(-50%);width:48px;color:var(--gold);
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
+.pod .medal{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--display);font-size:18px;color:#20120a;margin:0 auto 10px}
+.pod.r1 .medal{background:linear-gradient(160deg,#f9e3b0,#c69526)}
+.pod.r2 .medal{background:linear-gradient(160deg,#eceff1,#98a0a6)}
+.pod.r3 .medal{background:linear-gradient(160deg,#e3a878,#8d5526)}
+.pod .nm{font-family:var(--display);font-size:clamp(19px,2.4vw,27px);text-transform:uppercase;line-height:1.02}
+.pod .pt{font-family:var(--display);font-size:clamp(32px,4.6vw,48px);color:var(--gold);margin-top:8px;line-height:1}
+.pod .pt span{display:block;font-family:var(--text);font-size:11.5px;letter-spacing:.16em;
+  color:var(--muted);font-weight:600;margin-top:4px}
+.pod .chips{justify-content:center;margin-top:10px}
+@media(max-width:760px){
+  .podium{grid-template-columns:1fr;margin-top:-40px;max-width:420px}
+  .pod.r1{order:-1}
+}
+.sbrest{max-width:900px;margin:22px auto 0}
+.rank .gap{font-size:12px;color:var(--muted);margin-left:10px;font-variant-numeric:tabular-nums}
+body.big .pod .nm{font-size:38px}
+body.big .pod .pt{font-size:64px}
+body.big .sbstage h1{font-size:104px}
+
+/* ---------- Turnierbaum ---------- */
+.brwrap{overflow-x:auto;padding:2px 2px 10px;margin-bottom:22px}
+.brblock{display:inline-block;min-width:100%}
+.brheads{display:flex;gap:44px;margin-bottom:10px}
+.brheads > div{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.brpanel{position:relative}
+.brsvg{position:absolute;inset:0;pointer-events:none}
+.brsvg polyline{fill:none;stroke:rgba(230,185,92,.28);stroke-width:1.5}
+.brm{position:absolute;width:196px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);overflow:hidden}
+.brm.done{border-color:var(--line-hard)}
+.brm.bye{opacity:.42}
+.brr{display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;font-size:13.5px}
+.brr + .brr{border-top:1px solid rgba(230,185,92,.14)}
+.brr .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brr .nm i{color:var(--muted);font-style:normal;font-size:11.5px}
+.brr.w{background:rgba(230,185,92,.15)}
+.brr.w .nm{color:var(--gold-lit);font-weight:600}
+.brr .sc{width:30px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.brr input.sc{width:40px;height:21px;padding:0 5px;text-align:center;border-radius:5px;background:var(--ink);border:1px solid var(--line);color:var(--bone)}
+.brtitle{margin:6px 0 10px}
+body.big .brm{width:196px}
+
+.empty{text-align:center;padding:44px 20px;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+.syncdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:middle}
+.syncdot.on{background:#57b84a;box-shadow:0 0 0 3px rgba(87,184,74,.18)}
+.syncdot.off{background:var(--red);box-shadow:0 0 0 3px rgba(216,56,44,.2)}
+.syncdot.idle{background:var(--gold-dim)}
+.foot{padding:44px 0 30px;color:var(--muted);font-size:13px;text-align:center}
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+  background:var(--gold);color:#20120a;padding:10px 20px;border-radius:999px;font-weight:700;
+  box-shadow:var(--shadow);z-index:99;
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{.topbar,.btn{display:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#/">
+      <svg viewBox="0 0 48 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 25 L6 6 L16 15 L24 3 L32 15 L42 6 L45 25 Z"/><path d="M3 25 H45"/>
+      </svg>
+      <span id="brandName">Royal Beef</span>
+    </a>
+    <nav class="nav" id="nav"></nav>
+  </div>
+</header>
+<main id="app"></main>
+<div class="wrap foot" id="foot"></div>
+<script>
+/* ============================================================
+   ROYAL BEEF LAN — Turnierverwaltung (Single File, offline-fähig)
+   Alles liegt im localStorage des Browsers. Export/Import im Admin.
+   ============================================================ */
+"use strict";
+
+const KEY = "royalbeef.v1";
+const PW_SALT = "rb#";
+
+/* ---------- Steam Artwork ---------- */
+const CDN = "https://cdn.cloudflare.steamstatic.com/steam/apps/";
+const heroUrl   = id => id ? CDN + id + "/library_hero.jpg" : "";
+const headerUrl = id => id ? CDN + id + "/header.jpg" : "";
+const logoUrl   = id => id ? CDN + id + "/logo.png" : "";
+
+/* ---------- Defaults ---------- */
+function variant(o){
+  return Object.assign({
+    title:"", appid:"", art:"", mode:"rounds", rounds:3,
+    accent:"#7a2634", tagline:"", rules:""
+  }, o);
+}
+
+function defaultState(){
+  return {
+    event:{
+      title:"Royal Beef — LAN 2026",
+      subtitle:"Vier Spiele, drei Backups, ein Sieger. Wer am Ende die meisten Punkte hat, nimmt die Krone mit nach Hause.",
+      current:""
+    },
+    pw: hashPw("muhkuhmuh"),
+    pointsTable:[12,10,8,6,5,4,3,2],
+    players:[
+      {id:"p1",name:"Spieler 1"},{id:"p2",name:"Spieler 2"},{id:"p3",name:"Spieler 3"},
+      {id:"p4",name:"Spieler 4"},{id:"p5",name:"Spieler 5"},{id:"p6",name:"Spieler 6"}
+    ],
+    slots:[
+      { id:"s1", label:"Spiel 1", numeral:"I", weight:1, active:"main",
+        main: variant({title:"Soldat", appid:"638490", mode:"rounds", rounds:3, accent:"#c2472a",
+          tagline:"2D-Deathmatch mit Jetpack, Blut und viel zu vielen Granaten.",
+          rules:"Drei Runden Capture the Flag oder Deathmatch. Nach jeder Runde wird die Platzierung eingetragen."}),
+        backup: variant({title:"Trackmania", appid:"2225070", mode:"rounds", rounds:3, accent:"#2f7fd8",
+          tagline:"Strecke, Stoppuhr, Nervenzusammenbruch. Wiederholen bis es sitzt.",
+          rules:"Drei Strecken, pro Strecke zählt die Bestzeit. Schnellste Zeit gewinnt die Runde."}) },
+
+      { id:"s2", label:"Spiel 2", numeral:"II", weight:1, active:"main",
+        main: variant({title:"Descenders Next", appid:"2375530", mode:"rounds", rounds:3, accent:"#3aa6bd",
+          tagline:"Board statt Bremse. Bergab, bis jemand im Baum hängt.",
+          rules:"Drei Läufe. Gewertet wird pro Lauf die erreichte Rep bzw. die Zielzeit."}),
+        backup: variant({title:"SpeedRunners 2", appid:"3183760", mode:"rounds", rounds:3, accent:"#e0a12f",
+          tagline:"Acht rennen, sieben fliegen aus dem Bild. Der Feuerring frisst sich von hinten durch.",
+          rules:"Drei Rennen. Pro Rennen zählt die Platzierung, wer zuletzt übrig bleibt gewinnt die Runde."}) },
+
+      { id:"s3", label:"Spiel 3", numeral:"III", weight:1, active:"main",
+        main: variant({title:"Mortal Kombat 1", appid:"1971870", mode:"bracket", rounds:3, accent:"#a8271f",
+          tagline:"1 gegen 1, Best of 3, keine Ausreden.",
+          rules:"Gruppenphase Jeder-gegen-Jeden, Best of 3. Die besten zwei je Gruppe ziehen ins Halbfinale ein."}),
+        backup: variant({title:"Worms Armageddon", appid:"217200", mode:"bracket", rounds:3, accent:"#6a9a2f",
+          tagline:"Der Klassiker. Rundenbasiert, hinterhältig, und irgendwann kommt die Heilige Handgranate.",
+          rules:"1 gegen 1 im Turnierbaum, ein Team pro Spieler. Wer alle gegnerischen Würmer versenkt, kommt weiter."}) },
+
+      { id:"s4", label:"Spiel 4", numeral:"IV", weight:1, active:"main",
+        main: variant({title:"Shooter (noch offen)", appid:"", mode:"rounds", rounds:3, accent:"#6b6f2a",
+          tagline:"Steht noch nicht fest. Titel, Artwork und Wertung trägst du im Admin nach.",
+          rules:"Modus im Admin festlegen: Runden oder Double Elimination."}),
+        backup: variant({title:"TRON 2.0", appid:"327740", mode:"bracket", rounds:3, accent:"#28b6d6",
+          tagline:"Disc Arena. Der Klassiker, der auf jeder Möhre läuft.",
+          rules:"Disc-Arena 1 gegen 1 im Turnierbaum."}) }
+    ],
+    results:{}
+  };
+}
+
+/* ---------- Speicher (localStorage mit Fallback) ---------- */
+let memState = null;
+let bc = null;
+try { bc = new BroadcastChannel("royalbeef"); } catch(e){}
+
+function rawGet(){
+  try { return localStorage.getItem(KEY); } catch(e){ return memState; }
+}
+function rawSet(v){
+  try { localStorage.setItem(KEY, v); } catch(e){ memState = v; }
+}
+
+/* Merge-Absicherung, falls in einer neueren Version Felder dazukommen */
+function mergeState(d){
+  const base = defaultState();
+  if(!d || !Array.isArray(d.players)) return base;
+  return Object.assign(base, d, { event: Object.assign(base.event, d.event || {}) });
+}
+
+function load(){
+  const raw = rawGet();
+  if(!raw) return defaultState();
+  try{ return mergeState(JSON.parse(raw)); }
+  catch(e){ return defaultState(); }
+}
+
+let S = load();
+let unlocked = false;
+let adminTab = "results";
+
+function save(broadcast){
+  rawSet(JSON.stringify(S));
+  if(broadcast !== false && bc) { try{ bc.postMessage("sync"); }catch(e){} }
+  schedulePush();
+}
+
+/* ============================================================
+   Server-Sync
+   Liegt die Seite auf einem Server mit /api/state, halten alle
+   Geräte denselben Stand. Fehlt der Endpunkt (Datei geöffnet,
+   GitHub Pages, nginx), läuft alles wie bisher nur lokal.
+   ============================================================ */
+const sync = { on:false, rev:0, timer:null, busy:false, status:"local", protected:false };
+
+/* Das im Admin eingegebene Passwort wird für Schreibzugriffe mitgeschickt.
+   Es bleibt in dieser Sitzung, nicht dauerhaft auf der Platte. */
+let authPw = (() => { try{ return sessionStorage.getItem("rb.auth") || ""; }catch(e){ return ""; } })();
+function setAuth(pw){
+  authPw = pw || "";
+  try{ pw ? sessionStorage.setItem("rb.auth", pw) : sessionStorage.removeItem("rb.auth"); }catch(e){}
+}
+
+async function apiGet(){
+  const r = await fetch("api/state", { cache:"no-store" });
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+
+function setSync(st){ if(sync.status !== st){ sync.status = st; updateFoot(); } }
+
+async function pushNow(){
+  if(!sync.on) return;
+  clearTimeout(sync.timer); sync.timer = null;
+  sync.busy = true;
+  try{
+    const r = await fetch("api/state", {
+      method:"PUT",
+      headers:{ "Content-Type":"application/json", "X-Royalbeef-Auth": authPw },
+      body: JSON.stringify({ rev: sync.rev, state: S })
+    });
+    if(r.status === 401){
+      // Ohne Schreibrecht darf nichts hängen bleiben: Serverstand zurückholen.
+      setSync("auth");
+      try{
+        const d = await apiGet();
+        sync.rev = d.rev; S = mergeState(d.state); normalize();
+        rawSet(JSON.stringify(S)); render();
+      }catch(e){}
+      toast("Dafür braucht es das Admin-Passwort");
+    } else if(r.status === 409){
+      const d = await r.json();
+      sync.rev = d.rev; S = mergeState(d.state); normalize();
+      rawSet(JSON.stringify(S));
+      setSync("ok"); render();
+      toast("Ein anderes Gerät war schneller — Stand neu geladen");
+    } else if(r.ok){
+      const d = await r.json(); sync.rev = d.rev; setSync("ok");
+    } else setSync("error");
+  }catch(e){ setSync("error"); }
+  sync.busy = false;
+}
+
+function schedulePush(){
+  if(!sync.on) return;
+  clearTimeout(sync.timer);
+  sync.timer = setTimeout(pushNow, 400);
+}
+
+async function pollLoop(){
+  if(!sync.on) return;
+  if(!sync.busy && !sync.timer){
+    try{
+      const d = await apiGet();
+      sync.protected = !!d.protected;
+      if(d.rev !== sync.rev && d.state){
+        sync.rev = d.rev; S = mergeState(d.state); normalize();
+        rawSet(JSON.stringify(S)); render();
+      }
+      setSync("ok");
+    }catch(e){ setSync("error"); }
+  }
+  setTimeout(pollLoop, 3000);
+}
+
+/* Nach jedem Übernehmen eines fremden Stands geradeziehen:
+   Nummerierung, erlaubte Spielerzahl, fehlende Ergebnis-Container. */
+function normalize(){
+  if(!Array.isArray(S.slots)) S.slots = [];
+  if(!Array.isArray(S.players)) S.players = [];
+  renumber();
+  if(S.players.length < MIN_PLAYERS || S.players.length > MAX_PLAYERS) setPlayerCount(S.players.length);
+  S.slots.forEach(s => { ensureRes(s.id, "main"); ensureRes(s.id, "backup"); });
+}
+
+async function initSync(){
+  let d;
+  try{ d = await apiGet(); }
+  catch(e){ setSync("local"); return; }
+  sync.on = true; sync.rev = d.rev || 0; sync.protected = !!d.protected;
+  if(d.state && Array.isArray(d.state.players)){
+    S = mergeState(d.state); normalize(); rawSet(JSON.stringify(S)); render();
+  } else {
+    await pushNow();   // Server ist noch leer: den lokalen Stand hochladen
+  }
+  setSync("ok");
+  pollLoop();
+}
+
+if(bc) bc.onmessage = () => { S = load(); render(); };
+window.addEventListener("storage", e => { if(e.key === KEY){ S = load(); render(); } });
+
+/* ---------- Hilfsfunktionen ---------- */
+function hashPw(s){
+  // Kein Kryptohash: reine Bequemlichkeitssperre, läuft auch ohne HTTPS.
+  let h = 2166136261 >>> 0;
+  const str = PW_SALT + s;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return h.toString(16);
+}
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = p => p + Math.random().toString(36).slice(2,8);
+const slotById = id => S.slots.find(s => s.id === id);
+function roman(n){
+  let out = "";
+  [[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]].forEach(([v,c]) => { while(n >= v){ out += c; n -= v; } });
+  return out || "I";
+}
+function renumber(){ S.slots.forEach((s,i) => { s.numeral = roman(i+1); }); }
+const playerById = id => S.players.find(p => p.id === id) || null;
+const pname = id => { const p = playerById(id); return p ? p.name : "—"; };
+const cfgOf = (slot, vk) => slot[vk || slot.active];
+const tablePts = i => Number(S.pointsTable[i] != null ? S.pointsTable[i] : 0) || 0;
+
+function toast(msg){
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 1900);
+}
+
+/* ---------- Ergebnis-Container ---------- */
+function ensureRes(slotId, vk){
+  if(!S.results[slotId]) S.results[slotId] = {};
+  if(!S.results[slotId][vk]) S.results[slotId][vk] = { rounds:[], b:{ scores:{}, finalRanking:[] } };
+  const r = S.results[slotId][vk];
+  if(!r.rounds) r.rounds = [];
+  if(!r.b) r.b = { scores:{}, finalRanking:[] };
+  if(!r.b.scores) r.b.scores = {};
+  if(!r.b.finalRanking) r.b.finalRanking = [];
+  if(r.g) delete r.g;
+  const cfg = cfgOf(slotById(slotId), vk);
+  while(r.rounds.length < (cfg.rounds||0)) r.rounds.push({ place:{}, points:{} });
+  return r;
+}
+
+/* ---------- Punkteberechnung ---------- */
+function roundPoints(slotId, vk){
+  const slot = slotById(slotId), cfg = cfgOf(slot, vk), r = ensureRes(slotId, vk);
+  const out = {};
+  S.players.forEach(p => out[p.id] = 0);
+  r.rounds.slice(0, cfg.rounds).forEach(rd => {
+    S.players.forEach(p => { out[p.id] += Number(rd.points[p.id] || 0); });
+  });
+  return out;
+}
+
+/* ============================================================
+   Double Elimination
+   Struktur ergibt sich allein aus der Bracketgröße, gespeichert
+   werden nur die Ergebnisse je Partie.
+   ============================================================ */
+const MIN_PLAYERS = 6, MAX_PLAYERS = 8, MAX_SLOTS = 12;
+
+function seedOrder(n){
+  let r = [1,2];
+  while(r.length < n){
+    const m = r.length * 2, out = [];
+    r.forEach(s => { out.push(s); out.push(m + 1 - s); });
+    r = out;
+  }
+  return r;
+}
+const bracketSize = () => 8;
+
+function seatList(){
+  const N = bracketSize(S.players.length);
+  return seedOrder(N).map(sd => (S.players[sd-1] ? S.players[sd-1].id : null));
+}
+
+const _bcache = {};
+function bracketOf(N){
+  if(_bcache[N]) return _bcache[N];
+  const k = Math.round(Math.log(N) / Math.log(2));
+  const M = [];
+  for(let r=1;r<=k;r++){
+    for(let j=0;j<(N>>r);j++){
+      M.push({ id:`W${r}-${j}`, side:"W", round:r, idx:j,
+        sa: r===1 ? {t:"seed",i:2*j}   : {t:"w",m:`W${r-1}-${2*j}`},
+        sb: r===1 ? {t:"seed",i:2*j+1} : {t:"w",m:`W${r-1}-${2*j+1}`} });
+    }
+  }
+  for(let i=1;i<=k-1;i++){
+    const cnt = N >> (i+1);
+    for(let j=0;j<cnt;j++){
+      M.push({ id:`L${2*i-1}-${j}`, side:"L", round:2*i-1, idx:j,
+        sa: i===1 ? {t:"l",m:`W1-${2*j}`}   : {t:"w",m:`L${2*i-2}-${2*j}`},
+        sb: i===1 ? {t:"l",m:`W1-${2*j+1}`} : {t:"w",m:`L${2*i-2}-${2*j+1}`} });
+    }
+    for(let j=0;j<cnt;j++){
+      M.push({ id:`L${2*i}-${j}`, side:"L", round:2*i, idx:j,
+        sa:{t:"w",m:`L${2*i-1}-${j}`}, sb:{t:"l",m:`W${i+1}-${cnt-1-j}`} });
+    }
+  }
+  M.push({ id:"GF",  side:"F", round:1, idx:0, sa:{t:"w",m:`W${k}-0`}, sb:{t:"w",m:`L${2*(k-1)}-0`} });
+  M.push({ id:"GF2", side:"F", round:2, idx:0, sa:{t:"w",m:"GF"}, sb:{t:"l",m:"GF"} });
+  return (_bcache[N] = { N, k, matches:M });
+}
+
+function resolveBracket(slotId, vk){
+  const N = bracketSize(S.players.length);
+  const B = bracketOf(N), seat = seatList();
+  const scores = ensureRes(slotId, vk).b.scores;
+  const win = {}, los = {}, part = {}, state = {};
+  const src = x => !x ? null : (x.t === "seed" ? (seat[x.i] || null) : ((x.t === "w" ? win : los)[x.m] || null));
+  B.matches.forEach(m => {
+    const a = src(m.sa), b = src(m.sb);
+    part[m.id] = { a, b };
+    const s = scores[m.id] || {};
+    const has = s.sa !== "" && s.sa != null && s.sb !== "" && s.sb != null;
+    if(!a && !b){ win[m.id] = null; los[m.id] = null; state[m.id] = "empty"; }
+    else if(a && !b){ win[m.id] = a; los[m.id] = null; state[m.id] = "bye"; }
+    else if(!a && b){ win[m.id] = b; los[m.id] = null; state[m.id] = "bye"; }
+    else if(a && b && has && Number(s.sa) !== Number(s.sb)){
+      const aw = Number(s.sa) > Number(s.sb);
+      win[m.id] = aw ? a : b; los[m.id] = aw ? b : a; state[m.id] = "done";
+    } else { win[m.id] = null; los[m.id] = null; state[m.id] = (a && b) ? "ready" : "wait"; }
+  });
+  // Zweites Finale nur, wenn der Sieger aus dem Verliererbaum das erste Finale gewinnt.
+  const gfNeeded = !!(win.GF && part.GF.b && win.GF === part.GF.b);
+  if(!gfNeeded){ win.GF2 = null; los.GF2 = null; state.GF2 = "off"; }
+  return { B, N, seat, part, win, los, state, gfNeeded, scores };
+}
+
+/* Platzierungsblöcke: wer in derselben Runde ausscheidet, teilt sich den Platz. */
+function bracketPlaces(slotId, vk){
+  const R = resolveBracket(slotId, vk);
+  const { B, win, los, state, gfNeeded } = R;
+  const P = S.players.length;
+  const blocks = [];
+  let pos = P;
+  for(let r=1;r<=2*(B.k-1);r++){
+    const ms = B.matches.filter(m => m.side === "L" && m.round === r
+                && state[m.id] !== "bye" && state[m.id] !== "empty");
+    if(!ms.length) continue;
+    blocks.unshift({ from: pos - ms.length + 1, to: pos, ids: ms.map(m => los[m.id]).filter(Boolean) });
+    pos -= ms.length;
+  }
+  const fin = gfNeeded ? "GF2" : "GF";
+  blocks.unshift({ from:2, to:2, ids: los[fin] ? [los[fin]] : [] });
+  blocks.unshift({ from:1, to:1, ids: win[fin] ? [win[fin]] : [] });
+  return { blocks, R };
+}
+
+function blockPoints(bl){
+  let sum = 0, n = 0;
+  for(let i=bl.from;i<=bl.to;i++){ sum += tablePts(i-1); n++; }
+  return n ? Math.round((sum/n) * 10) / 10 : 0;
+}
+
+function bracketPoints(slotId, vk){
+  const out = {};
+  S.players.forEach(p => out[p.id] = 0);
+  const manual = (ensureRes(slotId, vk).b.finalRanking || []).filter(playerById);
+  if(manual.length){ manual.forEach((pid,i) => { if(out[pid] != null) out[pid] = tablePts(i); }); return out; }
+  bracketPlaces(slotId, vk).blocks.forEach(bl => {
+    const v = blockPoints(bl);
+    bl.ids.forEach(pid => { if(out[pid] != null) out[pid] = v; });
+  });
+  return out;
+}
+
+/* Reihenfolge für die manuelle Korrektur */
+function bracketRanking(slotId, vk){
+  const out = [];
+  bracketPlaces(slotId, vk).blocks.forEach(bl => bl.ids.forEach(id => out.push(id)));
+  S.players.forEach(p => { if(!out.includes(p.id)) out.push(p.id); });
+  return out;
+}
+function effectiveRanking(slotId, vk){
+  const manual = (ensureRes(slotId, vk).b.finalRanking || []).filter(playerById);
+  const auto = bracketRanking(slotId, vk);
+  if(!manual.length) return auto;
+  auto.forEach(id => { if(!manual.includes(id)) manual.push(id); });
+  return manual;
+}
+/* Punkte eines Slots (nur die aktive Variante zählt) */
+function slotPoints(slot){
+  const vk = slot.active, cfg = cfgOf(slot, vk);
+  const base = cfg.mode === "bracket" ? bracketPoints(slot.id, vk) : roundPoints(slot.id, vk);
+  const w = Number(slot.weight) || 1;
+  const out = {};
+  S.players.forEach(p => out[p.id] = Math.round((base[p.id] || 0) * w * 100) / 100);
+  return out;
+}
+
+function totals(){
+  const per = {};
+  S.slots.forEach(s => per[s.id] = slotPoints(s));
+  return S.players.map(p => {
+    const parts = S.slots.map(s => ({ slot:s, pts: per[s.id][p.id] || 0 }));
+    return { id:p.id, name:p.name, parts, total: parts.reduce((a,b)=>a+b.pts, 0) };
+  }).sort((a,b) => b.total - a.total || a.name.localeCompare(b.name));
+}
+
+/* ============================================================
+   Artwork
+   ============================================================ */
+function artHTML(cfg, cls){
+  const src = cfg.art || heroUrl(cfg.appid);
+  const fb  = cfg.art ? "" : headerUrl(cfg.appid);
+  if(!src) return `<div class="art-fb ${cls||""}" style="--acc:${esc(cfg.accent)}"></div>`;
+  return `<div class="art-fb ${cls||""}" style="--acc:${esc(cfg.accent)}"></div>
+    <img class="art ${cls||""}" alt="" src="${esc(src)}" data-fb="${esc(fb)}" onerror="artFail(this)">`;
+}
+function artFail(img){
+  const fb = img.getAttribute("data-fb");
+  if(fb){ img.removeAttribute("data-fb"); img.src = fb; }
+  else img.remove();
+}
+window.artFail = artFail;
+
+/* ============================================================
+   Router / Chrome
+   ============================================================ */
+const app  = document.getElementById("app");
+const navE = document.getElementById("nav");
+
+function route(){
+  const h = (location.hash || "#/").replace(/^#/, "");
+  const parts = h.split("/").filter(Boolean);
+  return { view: parts[0] || "home", arg: parts[1] || "" };
+}
+
+function renderNav(r){
+  document.getElementById("brandName").textContent = S.event.title || "Royal Beef";
+  const links = [["#/","Start","home"]]
+    .concat(S.slots.map(s => ["#/game/"+s.id, s.label, "game:"+s.id]))
+    .concat([["#/punkte","Punktestand","punkte"],["#/admin","Admin","admin"]]);
+  navE.innerHTML = links.map(([href,label,key]) => {
+    const on = key === "home" ? r.view === "home"
+      : key.startsWith("game:") ? (r.view === "game" && r.arg === key.slice(5))
+      : r.view === key;
+    return `<a href="${href}" class="${on?"on":""}">${esc(label)}</a>`;
+  }).join("");
+  updateFoot();
+}
+
+/* Merkt sich das gerade bearbeitete Feld, damit ein Neuaufbau der Seite
+   den Fokus und die Scrollposition nicht verliert. */
+function keyOf(el){
+  if(!el || !el.dataset || !el.dataset.k) return null;
+  const d = el.dataset;
+  return ["k","f","slot","v","r","p","g","m","i"]
+    .filter(x => d[x] != null && d[x] !== "")
+    .map(x => `[data-${x}="${d[x]}"]`).join("");
+}
+
+function updateFoot(){
+  const f = document.getElementById("foot");
+  if(!f) return;
+  const m = {
+    ok:    ['<span class="syncdot on"></span>', "Live-Sync mit dem Server — alle Geräte sehen denselben Stand"],
+    error: ['<span class="syncdot off"></span>', "Server nicht erreichbar — Eingaben bleiben vorerst nur hier"],
+    auth:  ['<span class="syncdot off"></span>', "Server nimmt von hier keine Änderungen an — im Admin anmelden"],
+    local: ['<span class="syncdot idle"></span>', "Nur dieser Browser — zum Übertragen Export/Import im Admin"]
+  }[sync.status] || ["", ""];
+  f.innerHTML = `${esc(S.event.title)} · ${m[0]}${esc(m[1])} · <a href="#/admin" style="color:var(--gold)">Admin</a>`;
+}
+
+function render(opts){
+  const toTop = !!(opts && opts.scroll);
+  const y = window.scrollY;
+  const fk = toTop ? null : keyOf(document.activeElement);
+  const r = route();
+  renderNav(r);
+  if(r.view === "game")        app.innerHTML = viewGame(r.arg);
+  else if(r.view === "punkte") app.innerHTML = viewBoard();
+  else if(r.view === "admin")  app.innerHTML = viewAdmin();
+  else                         app.innerHTML = viewHome();
+  if(toTop){ window.scrollTo(0,0); return; }
+  window.scrollTo(0,y);
+  if(fk){
+    const el = app.querySelector(fk);
+    if(el && el.focus) try{ el.focus({preventScroll:true}); }catch(e){ el.focus(); }
+  }
+}
+window.addEventListener("hashchange", () => render({scroll:true}));
+
+/* ============================================================
+   Startseite
+   ============================================================ */
+function viewHome(){
+  const t = totals();
+  const top = t.slice(0,3);
+  const played = S.slots.filter(s => Object.values(slotPoints(s)).some(v => v > 0)).length;
+
+  const cards = S.slots.map(s => {
+    const cfg = cfgOf(s), isBackup = s.active === "backup";
+    const live = S.event.current === s.id;
+    const done = Object.values(slotPoints(s)).some(v => v > 0);
+    return `<a class="slot" href="#/game/${s.id}">
+      ${artHTML(cfg)}
+      <div class="scrim"></div>
+      <div class="body">
+        <div class="numeral">${esc(s.numeral)} · ${esc(s.label)}</div>
+        <div class="title">${esc(cfg.title || "Noch offen")}</div>
+        <div class="row">
+          <span class="badge plain">${cfg.mode === "bracket" ? "Double Elimination" : (cfg.rounds||3) + " Runden"}</span>
+          ${isBackup ? `<span class="badge">Backup läuft</span>` : ``}
+          ${live ? `<span class="badge red"><span class="dot"></span>Läuft gerade</span>` : (done ? `<span class="badge plain">Gewertet</span>` : ``)}
+        </div>
+      </div>
+    </a>`;
+  }).join("");
+
+  return `<div class="wrap">
+    <section class="hero">
+      <svg class="crest" viewBox="0 0 48 30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 25 L6 6 L16 15 L24 3 L32 15 L42 6 L45 25 Z"/><path d="M3 25 H45"/><circle cx="24" cy="10" r="1.6" fill="currentColor" stroke="none"/>
+      </svg>
+      <h1>${esc(S.event.title)}</h1>
+      <p class="lede">${esc(S.event.subtitle)}</p>
+      <div class="row" style="margin-top:22px">
+        <a class="btn gold" href="#/punkte">Punktestand ansehen</a>
+        ${S.slots.length ? `<a class="btn" href="#/game/${S.slots[0].id}">Zu ${esc(S.slots[0].label)}</a>` : ``}
+      </div>
+      <hr class="rule">
+    </section>
+
+    <section>
+      <div class="spread">
+        <h2>${S.slots.length === 1 ? "Das Spiel" : "Die " + S.slots.length + " Spiele"}</h2>
+        <span class="sub">${played} von ${S.slots.length} gewertet · ${S.players.length} Spieler</span>
+      </div>
+      ${cards ? `<div class="slots">${cards}</div>`
+        : `<div class="empty">Noch keine Spiele angelegt. Im <a href="#/admin" style="color:var(--gold)">Admin</a> unter „Spiele“ legst du das erste an.</div>`}
+    </section>
+
+    <section class="mt">
+      <h2>Aktuell vorn</h2>
+      <div class="board" style="margin-top:14px">
+        ${top.length && top[0].total > 0 ? top.map((e,i) => rankRow(e, i, top[0].total)).join("")
+          : `<div class="empty">Noch keine Punkte vergeben. Ergebnisse trägst du im <a href="#/admin" style="color:var(--gold)">Admin</a> ein.</div>`}
+      </div>
+    </section>
+    <div style="height:40px"></div>
+  </div>`;
+}
+
+function chipsFor(e){
+  return e.parts.filter(p => p.pts > 0)
+    .map(p => `<span class="chip">${esc(p.slot.numeral)} · ${p.pts}</span>`).join("");
+}
+
+function rankRow(e, i, max, leader){
+  const w = max > 0 ? Math.max(4, (e.total / max) * 100) : 0;
+  const chips = chipsFor(e);
+  const gap = (leader != null && i > 0) ? `<span class="gap">${Math.round((leader - e.total)*10)/10} Punkte zurück</span>` : "";
+  return `<div class="rank ${i===0?"p1":""}">
+    <div class="fill" style="--w:${w}%"></div>
+    <div class="pos">${i+1}</div>
+    <div><div class="who">${esc(e.name)}${gap}</div>${chips ? `<div class="chips">${chips}</div>` : ``}</div>
+    <div class="pts">${e.total}<small>Punkte</small></div>
+  </div>`;
+}
+
+const CROWN_SVG = `<svg viewBox="0 0 48 30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
+  <path d="M3 25 L6 6 L16 15 L24 3 L32 15 L42 6 L45 25 Z"/><path d="M3 25 H45"/>
+  <circle cx="24" cy="10" r="1.6" fill="currentColor" stroke="none"/></svg>`;
+
+/* ============================================================
+   Spielseite
+   ============================================================ */
+function viewGame(slotId){
+  const slot = slotById(slotId);
+  if(!slot) return `<div class="wrap"><div class="empty mt">Dieses Spiel gibt es nicht. <a href="#/" style="color:var(--gold)">Zurück zur Startseite</a></div></div>`;
+  const vk = slot.active, cfg = cfgOf(slot, vk);
+  const idx = S.slots.indexOf(slot);
+  const prev = S.slots[idx-1], next = S.slots[idx+1];
+
+  const tab = (key) => {
+    const c = slot[key], on = slot.active === key;
+    return `<div class="tab ${on?"on":""}" role="button" tabindex="0" data-act="setvariant" data-slot="${slot.id}" data-v="${key}">
+      <div class="k">${key === "main" ? "Hauptspiel" : "Backup"}</div>
+      <div class="n">${esc(c.title || "Nicht belegt")}</div>
+      <div class="m">${c.mode === "bracket" ? "Double Elimination" : (c.rounds||3) + " Runden"}${on ? " · aktiv" : ""}</div>
+    </div>`;
+  };
+
+  const pts = cfg.mode === "bracket" ? bracketPoints(slot.id, vk) : roundPoints(slot.id, vk);
+  const list = S.players.map(p => ({ id:p.id, name:p.name, pts: pts[p.id] || 0 }))
+                        .sort((a,b) => b.pts - a.pts || a.name.localeCompare(b.name));
+  const hasPts = list.some(x => x.pts > 0);
+
+  let detail = "";
+  if(cfg.mode === "bracket"){
+    detail = `<div class="panel"><h3>Turnierbaum</h3>${bracketHTML(slot.id, vk, false)}</div>
+      <div class="panel"><h3>Platzierungen</h3>${placesHTML(slot.id, vk)}</div>`;
+  } else {
+    const r = ensureRes(slot.id, vk);
+    const rounds = r.rounds.slice(0, cfg.rounds || 3);
+    detail = `<div class="panel"><h3>Runden</h3><div class="tbl-wrap"><table>
+      <tr><th>Spieler</th>${rounds.map((_,i)=>`<th class="num">R${i+1}</th>`).join("")}<th class="num">Gesamt</th></tr>
+      ${S.players.map(p => `<tr><td>${esc(p.name)}</td>
+        ${rounds.map(rd => `<td class="num">${Number(rd.points[p.id]||0)}</td>`).join("")}
+        <td class="num" style="color:var(--gold);font-weight:700">${rounds.reduce((a,rd)=>a+Number(rd.points[p.id]||0),0)}</td></tr>`).join("")}
+    </table></div></div>`;
+  }
+
+  return `<div class="wrap">
+    <div style="height:26px"></div>
+    <div class="gamehero">
+      ${artHTML(cfg)}
+      <div class="scrim"></div>
+      <div class="body">
+        <div class="numeral">${esc(slot.numeral)} · ${esc(slot.label)}${vk === "backup" ? " · Backup" : ""}</div>
+        ${cfg.appid && !cfg.art ? `<img class="gamelogo" alt="" src="${logoUrl(cfg.appid)}" onerror="this.remove()">` : ``}
+        <h1>${esc(cfg.title || "Noch offen")}</h1>
+        <p class="sub" style="max-width:60ch;margin:8px 0 0">${esc(cfg.tagline)}</p>
+      </div>
+    </div>
+
+    <div class="tabs">${tab("main")}${tab("backup")}</div>
+    <p class="mini">Klick auf eine Kachel legt fest, welche Variante gespielt und gewertet wird. Ergebnisse der anderen Variante bleiben erhalten.</p>
+
+    <div class="panel mt">
+      <h3>Wertung</h3>
+      <p class="sub" style="margin-bottom:10px">${cfg.mode === "bracket"
+        ? "Double Elimination: Wer verliert, rutscht in den Verliererbaum und darf weiterspielen. Nach der zweiten Niederlage ist Schluss. Die Endplatzierung bestimmt die Turnierpunkte."
+        : `${cfg.rounds||3} Runden. Pro Runde gibt es Punkte nach Platzierung: ${S.pointsTable.slice(0,6).join(" / ")} …`}</p>
+      ${cfg.rules ? `<div class="warn">${esc(cfg.rules)}</div>` : ``}
+      ${Number(slot.weight) !== 1 ? `<p class="sub" style="margin-top:10px">Dieses Spiel zählt ${slot.weight}-fach.</p>` : ``}
+    </div>
+
+    <div class="panel">
+      <h3>Stand in diesem Spiel</h3>
+      ${hasPts ? `<div class="board">${list.map((e,i) => `
+        <div class="rank ${i===0?"p1":""}"><div class="fill" style="--w:${(e.pts/list[0].pts)*100}%"></div>
+          <div class="pos">${i+1}</div><div class="who">${esc(e.name)}</div>
+          <div class="pts">${e.pts}<small>Punkte</small></div></div>`).join("")}</div>`
+        : `<div class="empty">Noch nichts eingetragen.</div>`}
+    </div>
+
+    ${detail}
+
+    <div class="row mt" style="justify-content:space-between">
+      <div class="row">
+        ${prev ? `<a class="btn" href="#/game/${prev.id}">← ${esc(prev.label)}</a>` : ``}
+        ${next ? `<a class="btn" href="#/game/${next.id}">${esc(next.label)} →</a>` : ``}
+      </div>
+      <div class="row">
+        <a class="btn" href="#/punkte">Gesamtstand</a>
+        <a class="btn gold" href="#/admin">Ergebnisse eintragen</a>
+      </div>
+    </div>
+    <div style="height:40px"></div>
+  </div>`;
+}
+
+/* ============================================================
+   Turnierbaum-Darstellung
+   ============================================================ */
+const BR = { W:196, H:56, ROW:28, GAP:44, VG:12 };
+const BR_U = BR.H + BR.VG;
+
+function bracketLayout(N){
+  const B = bracketOf(N), k = B.k, cy = {};
+  for(let r=1;r<=k;r++)
+    for(let j=0;j<(N>>r);j++)
+      cy[`W${r}-${j}`] = r === 1 ? j*BR_U + BR.H/2
+        : (cy[`W${r-1}-${2*j}`] + cy[`W${r-1}-${2*j+1}`]) / 2;
+  for(let i=1;i<=k-1;i++){
+    const cnt = N >> (i+1);
+    for(let j=0;j<cnt;j++)
+      cy[`L${2*i-1}-${j}`] = i === 1 ? j*BR_U + BR.H/2
+        : (cy[`L${2*i-2}-${2*j}`] + cy[`L${2*i-2}-${2*j+1}`]) / 2;
+    for(let j=0;j<cnt;j++) cy[`L${2*i}-${j}`] = cy[`L${2*i-1}-${j}`];
+  }
+  cy.GF = BR.H/2; cy.GF2 = BR.H/2 + BR_U;
+  return cy;
+}
+
+function srcLabel(x, B){
+  if(!x) return "—";
+  if(x.t === "seed") return "frei";
+  const m = B.matches.find(y => y.id === x.m);
+  if(!m) return "—";
+  const where = m.side === "W" ? `Sieger-R${m.round}.${m.idx+1}`
+              : m.side === "L" ? `Verlierer-R${m.round}.${m.idx+1}` : "Finale";
+  return (x.t === "w" ? "Sieger " : "Verlierer ") + where;
+}
+
+function brCard(m, R, edit, slotId, vk, x, y){
+  const p = R.part[m.id], s = R.scores[m.id] || {};
+  const st = R.state[m.id];
+  const cell = (f, v) => edit
+    ? `<input class="sc" type="number" value="${v===""||v==null?"":v}" data-k="br.score" data-f="${f}" data-slot="${slotId}" data-v="${vk}" data-m="${m.id}">`
+    : `<span class="sc">${v===""||v==null?"·":v}</span>`;
+  const row = (pid, ref, f) => {
+    const isWin = R.win[m.id] && R.win[m.id] === pid;
+    const name = pid ? esc(pname(pid))
+      : `<i>${st === "bye" ? "Freilos" : st === "empty" ? "—" : srcLabel(ref, R.B)}</i>`;
+    return `<div class="brr ${isWin?"w":""}"><span class="nm">${name}</span>${pid ? cell(f, s[f]) : `<span class="sc">·</span>`}</div>`;
+  };
+  return `<div class="brm ${(st==="bye"||st==="empty")?"bye":""} ${st==="done"?"done":""}" style="left:${x}px;top:${y - BR.H/2}px">
+    ${row(p.a, m.sa, "sa")}${row(p.b, m.sb, "sb")}</div>`;
+}
+
+function brPanel(title, cols, cy, R, edit, slotId, vk){
+  const width = cols.length * (BR.W + BR.GAP) - BR.GAP;
+  let height = 0;
+  cols.forEach(c => c.ids.forEach(id => { height = Math.max(height, cy[id] + BR.H/2); }));
+  height += 8;
+  const lines = [];
+  const cards = cols.map((c, ci) => c.ids.map(id => {
+    const m = R.B.matches.find(y => y.id === id);
+    const x = ci * (BR.W + BR.GAP);
+    [m.sa, m.sb].forEach(ref => {
+      if(!ref || ref.t === "seed") return;
+      const prev = ci > 0 ? cols[ci-1].ids.indexOf(ref.m) : -1;
+      if(prev < 0) return;
+      const x1 = (ci-1) * (BR.W + BR.GAP) + BR.W, y1 = cy[ref.m];
+      const xm = x1 + BR.GAP/2, y2 = cy[id];
+      lines.push(`<polyline points="${x1},${y1} ${xm},${y1} ${xm},${y2} ${x},${y2}"/>`);
+    });
+    return brCard(m, R, edit, slotId, vk, x, cy[id]);
+  }).join("")).join("");
+  return `<div class="brblock">
+    <div class="brheads" style="width:${width}px">${cols.map(c =>
+      `<div style="width:${BR.W}px">${esc(c.label)}</div>`).join("")}</div>
+    <div class="brpanel" style="width:${width}px;height:${height}px">
+      <svg class="brsvg" width="${width}" height="${height}">${lines.join("")}</svg>
+      ${cards}
+    </div>
+  </div>`;
+}
+
+function bracketHTML(slotId, vk, edit){
+  if(S.players.length < MIN_PLAYERS)
+    return `<div class="empty">Für einen Turnierbaum werden mindestens ${MIN_PLAYERS} Spieler gebraucht.</div>`;
+  const R = resolveBracket(slotId, vk), B = R.B, N = R.N, k = B.k;
+  const cy = bracketLayout(N);
+  const ids = side => r => B.matches.filter(m => m.side === side && m.round === r).map(m => m.id);
+
+  const wCols = [];
+  for(let r=1;r<=k;r++) wCols.push({ label: r === k ? "Finale Gewinnerbaum" : `Runde ${r}`, ids: ids("W")(r) });
+  const lCols = [];
+  for(let r=1;r<=2*(k-1);r++) lCols.push({ label: r === 2*(k-1) ? "Finale Verliererbaum" : `Runde ${r}`, ids: ids("L")(r) });
+  const fCols = [{ label:"Grand Final", ids: R.gfNeeded ? ["GF","GF2"] : ["GF"] }];
+
+  return `<div class="brwrap">${brPanel("Gewinnerbaum", wCols, cy, R, edit, slotId, vk)}</div>
+    <h3 class="brtitle">Verliererbaum</h3>
+    <p class="mini" style="margin:-6px 0 12px">Eine Niederlage im Gewinnerbaum ist noch kein Ausscheiden — wer hier zweimal verliert, ist raus.</p>
+    <div class="brwrap">${brPanel("Verliererbaum", lCols, cy, R, edit, slotId, vk)}</div>
+    <h3 class="brtitle">Grand Final</h3>
+    <p class="mini" style="margin:-6px 0 12px">${R.gfNeeded
+      ? "Der Sieger des Verliererbaums hat das erste Finale gewonnen — beide haben jetzt eine Niederlage, also entscheidet ein zweites Finale."
+      : "Gewinnerbaum gegen Verliererbaum. Gewinnt der Aufsteiger aus dem Verliererbaum, wird ein zweites Finale gespielt."}</p>
+    <div class="brwrap">${brPanel("Grand Final", fCols, cy, R, edit, slotId, vk)}</div>`;
+}
+
+function placesHTML(slotId, vk){
+  const { blocks } = bracketPlaces(slotId, vk);
+  const rows = blocks.filter(b => b.ids.length).map(b => `<tr>
+    <td style="width:90px">${b.from === b.to ? b.from + "." : b.from + ".–" + b.to + "."}</td>
+    <td>${b.ids.map(id => esc(pname(id))).join(", ")}</td>
+    <td class="num" style="color:var(--gold);font-weight:700">${blockPoints(b)}</td></tr>`).join("");
+  if(!rows) return `<p class="sub">Noch keine Partie entschieden.</p>`;
+  return `<div class="tbl-wrap"><table>
+    <tr><th>Platz</th><th>Spieler</th><th class="num">Punkte</th></tr>${rows}</table></div>
+    <p class="mini" style="margin-top:10px">Wer in derselben Runde ausscheidet, teilt sich den Platz und bekommt die gemittelten Punkte.</p>`;
+}
+
+/* ============================================================
+   Punktestand
+   ============================================================ */
+function podCard(e, place){
+  const medal = ["1","2","3"][place-1];
+  return `<div class="pod r${place}">
+    ${place === 1 ? `<div class="crown">${CROWN_SVG}</div>` : ``}
+    <div class="medal">${medal}</div>
+    <div class="nm">${esc(e.name)}</div>
+    <div class="pt">${e.total}<span>Punkte</span></div>
+    ${chipsFor(e) ? `<div class="chips">${chipsFor(e)}</div>` : ``}
+  </div>`;
+}
+
+function viewBoard(){
+  const t = totals();
+  const max = t.length ? t[0].total : 0;
+  const big = document.body.classList.contains("big");
+  const played = S.slots.filter(s => Object.values(slotPoints(s)).some(v => v > 0)).length;
+  const live = S.event.current ? slotById(S.event.current) : null;
+
+  let lead = `Noch kein Punkt vergeben — hier wird gleich abgerechnet.`;
+  if(max > 0){
+    const tied = t.filter(x => x.total === max);
+    lead = tied.length > 1
+      ? `<b>${tied.map(x => esc(x.name)).join(" und ")}</b> liegen gleichauf bei <b>${max}</b> Punkten.`
+      : `<b>${esc(t[0].name)}</b> führt mit <b>${max}</b> Punkten, ${
+          t[1] ? `${Math.round((max - t[1].total)*10)/10} vor ${esc(t[1].name)}` : "konkurrenzlos"}.`;
+  }
+
+  const podium = max > 0 ? `<div class="podium">
+      ${t[1] ? podCard(t[1], 2) : `<div></div>`}
+      ${podCard(t[0], 1)}
+      ${t[2] ? podCard(t[2], 3) : `<div></div>`}
+    </div>` : ``;
+
+  const rest = t.slice(3);
+
+  return `<div class="wrap">
+    <section class="sbstage">
+      <div class="sbcrown">${CROWN_SVG}</div>
+      <div class="sblaurel"></div>
+      <div class="sbinner">
+        <div class="sbeyebrow">${esc(S.event.title)}</div>
+        <h1>Punktestand</h1>
+        <p class="sblead">${lead}</p>
+        <p class="mini">${played} von ${S.slots.length} Spielen gewertet${
+          live ? ` · gerade läuft ${esc(cfgOf(live).title || live.label)}` : ``}</p>
+        <div class="sbtools">
+          <button class="btn" data-act="big">${big ? "Normale Ansicht" : "Beamer-Ansicht"}</button>
+          <button class="btn" data-act="fullscreen">Vollbild</button>
+        </div>
+      </div>
+    </section>
+
+    ${podium}
+
+    ${rest.length ? `<div class="board sbrest">
+      ${rest.map((e,i) => rankRow(e, i+3, max, max)).join("")}</div>` : ``}
+
+    ${max > 0 ? `` : `<div class="empty sbrest" style="margin-top:26px">
+      Sobald im <a href="#/admin" style="color:var(--gold)">Admin</a> das erste Ergebnis steht, füllt sich diese Seite.</div>`}
+
+    <div class="panel mt">
+      <h3>Punkte je Spiel</h3>
+      <div class="tbl-wrap"><table>
+        <tr><th>Spieler</th>${S.slots.map(s => {
+          const cfg = cfgOf(s);
+          return `<th class="num">${esc(s.numeral)}<div class="mini" style="font-weight:400">${esc((cfg.title||"—").slice(0,16))}</div></th>`;
+        }).join("")}<th class="num">Gesamt</th></tr>
+        ${t.map(e => `<tr><td>${esc(e.name)}</td>
+          ${e.parts.map(p => `<td class="num">${p.pts}</td>`).join("")}
+          <td class="num" style="color:var(--gold);font-weight:700">${e.total}</td></tr>`).join("")}
+      </table></div>
+      <p class="mini" style="margin-top:12px">Gewertet wird immer nur die aktive Variante eines Spiels — Haupt- oder Backup.</p>
+    </div>
+    <div style="height:40px"></div>
+  </div>`;
+}
+
+/* ============================================================
+   Admin
+   ============================================================ */
+let adminSlot = "s1";
+let adminVariant = null; // null = aktive Variante
+
+function viewAdmin(){
+  if(!unlocked){
+    return `<div class="wrap"><div class="gate panel">
+      <h2>Admin</h2>
+      <p class="sub">Passwort eingeben, um Ergebnisse und Spiele zu bearbeiten.</p>
+      <div class="field"><label class="f" for="pwin">Passwort</label>
+        <input type="password" id="pwin" autocomplete="current-password" placeholder="Passwort"></div>
+      <button class="btn gold" data-act="unlock">Entsperren</button>
+    </div></div>`;
+  }
+  const tabs = [["results","Ergebnisse"],["games","Spiele"],["players","Spieler"],["settings","Einstellungen"]];
+  return `<div class="wrap">
+    <div style="height:26px"></div>
+    <div class="spread"><h1>Admin</h1><button class="btn" data-act="lock">Sperren</button></div>
+    <hr class="rule">
+    <div class="tabbar mt">${tabs.map(([k,l]) =>
+      `<button class="${adminTab===k?"on":""}" data-act="atab" data-k="${k}">${l}</button>`).join("")}</div>
+    ${adminTab==="results" ? adminResults() : adminTab==="games" ? adminGames() : adminTab==="players" ? adminPlayers() : adminSettings()}
+    <div style="height:50px"></div>
+  </div>`;
+}
+
+/* ---------- Ergebnisse ---------- */
+function adminResults(){
+  if(!S.players.length) return `<div class="empty">Erst Spieler anlegen — Reiter „Spieler“.</div>`;
+  if(!S.slots.length) return `<div class="empty">Noch keine Spiele angelegt — Reiter „Spiele“.</div>`;
+  const slot = slotById(adminSlot) || S.slots[0];
+  adminSlot = slot.id;
+  const vk = adminVariant || slot.active;
+  const cfg = cfgOf(slot, vk);
+
+  const picker = `<div class="row" style="margin-bottom:16px">${S.slots.map(s =>
+    `<button class="btn sm ${s.id===slot.id?"gold":""}" data-act="pickslot" data-id="${s.id}">${esc(s.numeral)} · ${esc(cfgOf(s).title||s.label)}</button>`).join("")}</div>`;
+
+  const vpick = `<div class="row" style="margin-bottom:6px">
+    ${["main","backup"].map(k => `<button class="btn sm ${vk===k?"gold":""}" data-act="pickvar" data-k="${k}">
+      ${k==="main"?"Hauptspiel":"Backup"}: ${esc(slot[k].title||"—")}</button>`).join("")}
+    ${vk !== slot.active ? `<span class="badge plain">wird gerade nicht gewertet</span>`
+      : `<span class="badge">wird gewertet</span>`}</div>
+  <p class="mini" style="margin-bottom:16px">Aktiv gewertet wird: <b>${esc(cfgOf(slot, slot.active).title || "—")}</b>.
+    <button class="btn sm" data-act="setvariant" data-slot="${slot.id}" data-v="${vk}">Diese Variante aktiv schalten</button></p>`;
+
+  return `<div class="panel">
+    <h3>${esc(slot.label)} — ${esc(cfg.title || "unbenannt")}</h3>
+    ${picker}${vpick}
+    ${cfg.mode === "bracket" ? editorBracket(slot, vk) : editorRounds(slot, vk)}
+  </div>`;
+}
+
+function dupPlaces(rd){
+  const seen = {}, dup = [];
+  Object.values(rd.place).forEach(v => { if(v){ if(seen[v]) dup.push(v); seen[v] = 1; } });
+  return dup.length ? [...new Set(dup)].join(", ") : "";
+}
+
+function editorRounds(slot, vk){
+  const cfg = cfgOf(slot, vk), r = ensureRes(slot.id, vk);
+  const n = cfg.rounds || 3;
+  const totalsRow = S.players.map(p => ({ p, sum: r.rounds.slice(0,n).reduce((a,rd)=>a+Number(rd.points[p.id]||0),0) }))
+                             .sort((a,b)=>b.sum-a.sum);
+  let out = "";
+  for(let i=0;i<n;i++){
+    const rd = r.rounds[i];
+    out += `<div class="panel" style="background:var(--ink)">
+      <div class="spread"><h3>Runde ${i+1}</h3>
+        <button class="btn sm" data-act="clearround" data-slot="${slot.id}" data-v="${vk}" data-r="${i}">Runde leeren</button></div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Spieler</th><th style="width:120px">Platz</th><th style="width:110px" class="num">Punkte</th></tr>
+        ${S.players.map(p => `<tr>
+          <td>${esc(p.name)}</td>
+          <td><select data-k="round.place" data-slot="${slot.id}" data-v="${vk}" data-r="${i}" data-p="${p.id}">
+            <option value="">—</option>
+            ${S.players.map((_,j) => `<option value="${j+1}" ${String(rd.place[p.id])===String(j+1)?"selected":""}>${j+1}. Platz</option>`).join("")}
+          </select></td>
+          <td><input type="number" step="0.5" class="num" value="${rd.points[p.id] != null ? rd.points[p.id] : ""}"
+              data-k="round.points" data-slot="${slot.id}" data-v="${vk}" data-r="${i}" data-p="${p.id}" placeholder="0"></td>
+        </tr>`).join("")}
+      </table></div>
+      ${dupPlaces(rd) ? `<div class="warn" style="margin-top:10px">Platz ${dupPlaces(rd)} ist doppelt vergeben. Beide Spieler bekommen dieselben Punkte.</div>` : ``}
+      <p class="mini" style="margin-top:8px">Platz wählen füllt die Punkte automatisch. Der Wert lässt sich danach frei überschreiben.</p>
+    </div>`;
+  }
+  out += `<div class="panel" style="background:var(--ink)"><h3>Summe aus ${n} Runden</h3>
+    <div class="tbl-wrap"><table>${totalsRow.map((x,i) => `<tr><td style="width:40px">${i+1}</td><td>${esc(x.p.name)}</td>
+      <td class="num" style="color:var(--gold);font-weight:700">${x.sum}${Number(slot.weight)!==1?` <span class="mini">× ${slot.weight}</span>`:""}</td></tr>`).join("")}</table></div></div>`;
+  return out;
+}
+
+function editorBracket(slot, vk){
+  if(S.players.length < MIN_PLAYERS)
+    return `<div class="empty">Erst ${MIN_PLAYERS} bis ${MAX_PLAYERS} Spieler anlegen — Reiter „Spieler“.</div>`;
+  const N = bracketSize(S.players.length);
+  const byes = N - S.players.length;
+  const seat = seatList();
+  const rank = effectiveRanking(slot.id, vk);
+  const manual = (ensureRes(slot.id, vk).b.finalRanking || []).length > 0;
+
+  return `<div class="warn" style="margin-bottom:16px">
+      ${S.players.length} Spieler auf ${N} Plätzen, also ${byes} Freilos${byes===1?"":"e"} in Runde 1.
+      Gesetzt wird nach der Reihenfolge im Reiter „Spieler“: Platz 1 dort ist Setzkopf 1.
+    </div>
+    <div class="row" style="margin-bottom:16px">
+      <button class="btn sm" data-act="shuffle">Setzliste neu auslosen</button>
+      <button class="btn sm danger" data-act="clearbracket" data-slot="${slot.id}" data-v="${vk}">Alle Ergebnisse dieses Baums löschen</button>
+    </div>
+    ${bracketHTML(slot.id, vk, true)}
+
+    <div class="panel" style="background:var(--ink)">
+      <h3>Platzierungen aus dem Baum</h3>
+      ${placesHTML(slot.id, vk)}
+    </div>
+
+    <div class="panel" style="background:var(--ink)">
+      <div class="spread"><h3>Endplatzierung überschreiben</h3>
+        <div class="row">
+          <button class="btn sm" data-act="takeauto" data-slot="${slot.id}" data-v="${vk}">Aus Turnierbaum übernehmen</button>
+          ${manual ? `<button class="btn sm danger" data-act="clearmanual" data-slot="${slot.id}" data-v="${vk}">Überschreibung aufheben</button>` : ``}
+        </div></div>
+      <p class="mini" style="margin-bottom:12px">${manual
+        ? "Manuell festgelegt — der Turnierbaum wird für die Punkte ignoriert, geteilte Plätze gibt es hier nicht."
+        : "Solange nichts überschrieben ist, zählen die Platzierungen aus dem Baum oben."}</p>
+      ${manual ? rank.map((pid,i) => `<div class="ordrow">
+        <span class="n">${i+1}</span>
+        <span class="grow">${esc(pname(pid))}</span>
+        <span class="ptsout">${tablePts(i)}</span>
+        <button class="btn sm" data-act="moveup" data-slot="${slot.id}" data-v="${vk}" data-i="${i}" ${i===0?"disabled":""}>▲</button>
+        <button class="btn sm" data-act="movedown" data-slot="${slot.id}" data-v="${vk}" data-i="${i}" ${i===rank.length-1?"disabled":""}>▼</button>
+      </div>`).join("") : ``}
+    </div>`;
+}
+
+function adminGames(){
+  const head = `<div class="panel">
+    <div class="spread"><h3>Spiele</h3>
+      <div class="row">
+        <span class="mini">${S.slots.length} von höchstens ${MAX_SLOTS}</span>
+        <button class="btn sm gold" data-act="addslot" ${S.slots.length>=MAX_SLOTS?"disabled":""}>Spiel hinzufügen</button>
+      </div></div>
+    <p class="mini">Jedes Spiel hat ein Hauptspiel und ein Backup, beide mit eigenem Titel, Artwork und eigener Wertung. Die Reihenfolge hier bestimmt die Nummerierung im Menü und auf der Startseite.</p>
+  </div>`;
+
+  return head + S.slots.map((s, si) => {
+    const v = k => {
+      const c = s[k];
+      return `<div class="panel" style="background:var(--ink)">
+        <div class="spread" style="margin-bottom:12px">
+          <h3>${k==="main"?"Hauptspiel":"Backup"}</h3>
+          <button class="btn sm ${s.active===k?"gold":""}" data-act="setvariant" data-slot="${s.id}" data-v="${k}">${s.active===k?"aktiv":"aktiv schalten"}</button>
+        </div>
+        <div class="grid2">
+          <div class="field"><label class="f">Titel</label>
+            <input type="text" value="${esc(c.title)}" data-k="cfg" data-f="title" data-slot="${s.id}" data-v="${k}"></div>
+          <div class="field"><label class="f">Steam App-ID (für Artwork)</label>
+            <input type="text" value="${esc(c.appid)}" placeholder="z. B. 638490" data-k="cfg" data-f="appid" data-slot="${s.id}" data-v="${k}"></div>
+        </div>
+        <div class="field"><label class="f">Eigenes Bild statt Steam (URL oder Datei neben der HTML, z. B. img/shooter.jpg)</label>
+          <input type="text" value="${esc(c.art)}" data-k="cfg" data-f="art" data-slot="${s.id}" data-v="${k}"></div>
+        <div class="grid3">
+          <div class="field"><label class="f">Wertung</label>
+            <select data-k="cfg" data-f="mode" data-slot="${s.id}" data-v="${k}">
+              <option value="rounds" ${c.mode==="rounds"?"selected":""}>Runden</option>
+              <option value="bracket" ${c.mode==="bracket"?"selected":""}>Double Elimination</option>
+            </select></div>
+          <div class="field"><label class="f">Anzahl Runden</label>
+            <input type="number" min="1" max="12" value="${c.rounds||3}" data-k="cfg" data-f="rounds" data-slot="${s.id}" data-v="${k}"></div>
+          <div class="field"><label class="f">Akzentfarbe (ohne Artwork)</label>
+            <input type="text" value="${esc(c.accent)}" data-k="cfg" data-f="accent" data-slot="${s.id}" data-v="${k}"></div>
+        </div>
+        <div class="field"><label class="f">Kurzbeschreibung</label>
+          <input type="text" value="${esc(c.tagline)}" data-k="cfg" data-f="tagline" data-slot="${s.id}" data-v="${k}"></div>
+        <div class="field" style="margin-bottom:0"><label class="f">Regeln auf der Spielseite</label>
+          <textarea data-k="cfg" data-f="rules" data-slot="${s.id}" data-v="${k}">${esc(c.rules)}</textarea></div>
+      </div>`;
+    };
+    return `<div class="panel">
+      <div class="spread" style="margin-bottom:14px">
+        <h3>${esc(s.numeral)} · ${esc(cfgOf(s).title || s.label)}</h3>
+        <div class="row">
+          <button class="btn sm" data-act="slotup" data-slot="${s.id}" ${si===0?"disabled":""}>▲</button>
+          <button class="btn sm" data-act="slotdown" data-slot="${s.id}" ${si===S.slots.length-1?"disabled":""}>▼</button>
+          <button class="btn sm danger" data-act="delslot" data-slot="${s.id}">Spiel entfernen</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label class="f">Bezeichnung im Menü</label>
+          <input type="text" value="${esc(s.label)}" data-k="slot" data-f="label" data-slot="${s.id}"></div>
+        <div class="field"><label class="f">Punktefaktor (1 = normal, 2 = doppelt)</label>
+          <input type="number" step="0.5" min="0" value="${s.weight}" data-k="slot" data-f="weight" data-slot="${s.id}"></div>
+      </div>
+      ${v("main")}${v("backup")}
+    </div>`;
+  }).join("");
+}
+
+/* ---------- Spieler ---------- */
+function seedPreviewHTML(){
+  if(S.players.length < MIN_PLAYERS) return "";
+  const seat = seatList(), B = bracketOf(bracketSize());
+  const rows = B.matches.filter(m => m.round === 1 && m.side === "W").map((m,i) => {
+    const a = seat[m.sa.i], b = seat[m.sb.i];
+    const one = a && !b ? a : (!a && b ? b : null);
+    return `<tr><td style="width:70px">Partie ${i+1}</td><td>${one
+      ? `${esc(pname(one))} <span class="mini">— Freilos, direkt in Runde 2</span>`
+      : `${esc(pname(a))} <span class="mini">gegen</span> ${esc(pname(b))}`}</td></tr>`;
+  }).join("");
+  return `<div class="panel" style="background:var(--ink);margin-top:16px">
+    <h3>Erste Runde im Turnierbaum</h3>
+    <div class="tbl-wrap"><table>${rows}</table></div>
+    <p class="mini" style="margin-top:10px">Gilt für alle Spiele mit Double Elimination.</p>
+  </div>`;
+}
+
+function adminPlayers(){
+  return `<div class="panel">
+    <div class="spread"><h3>Spieler</h3>
+      <div class="row">
+        <span class="mini">${S.players.length} von ${MIN_PLAYERS}–${MAX_PLAYERS}</span>
+        <button class="btn sm" data-act="shuffle">Setzliste auslosen</button>
+        <button class="btn sm gold" data-act="addplayer" ${S.players.length>=MAX_PLAYERS?"disabled":""}>Spieler hinzufügen</button>
+      </div></div>
+    <p class="mini" style="margin-bottom:14px">Die Reihenfolge ist zugleich die Setzliste für den Turnierbaum: Platz 1 ist Setzkopf 1 und bekommt bei ungerader Spielerzahl das erste Freilos.</p>
+    ${S.players.length ? S.players.map((p,i) => `<div class="ordrow">
+      <span class="n">${i+1}</span>
+      <input type="text" value="${esc(p.name)}" data-k="player.name" data-p="${p.id}">
+      <button class="btn sm" data-act="pup" data-p="${p.id}" ${i===0?"disabled":""}>▲</button>
+      <button class="btn sm" data-act="pdown" data-p="${p.id}" ${i===S.players.length-1?"disabled":""}>▼</button>
+      <button class="btn sm danger" data-act="delplayer" data-p="${p.id}" ${S.players.length<=MIN_PLAYERS?"disabled":""}>Entfernen</button>
+    </div>`).join("") : `<div class="empty">Noch keine Spieler. Leg oben den ersten an.</div>`}
+    <p class="mini" style="margin-top:12px">Ein entfernter Spieler verschwindet auch aus allen Ergebnissen.</p>
+  </div>
+  ${seedPreviewHTML()}`;
+}
+
+/* ---------- Einstellungen ---------- */
+function adminSettings(){
+  return `<div class="panel">
+    <h3>Veranstaltung</h3>
+    <div class="field"><label class="f">Titel</label>
+      <input type="text" value="${esc(S.event.title)}" data-k="ev" data-f="title"></div>
+    <div class="field"><label class="f">Untertitel auf der Startseite</label>
+      <textarea data-k="ev" data-f="subtitle">${esc(S.event.subtitle)}</textarea></div>
+    <div class="field"><label class="f">Spieleranzahl</label>
+      <select data-k="pcount">
+        ${[6,7,8].map(n => `<option value="${n}" ${S.players.length===n?"selected":""}>${n} Spieler</option>`).join("")}
+      </select>
+      <p class="mini" style="margin-top:6px">Weniger Spieler entfernt die letzten aus der Liste samt ihrer Ergebnisse. Der Turnierbaum hat immer acht Plätze; bei 6 oder 7 Spielern bekommen die oberen Setzköpfe ein Freilos.</p></div>
+    <div class="field" style="margin-bottom:0"><label class="f">Läuft gerade</label>
+      <select data-k="ev" data-f="current">
+        <option value="">— nichts markiert —</option>
+        ${S.slots.map(s => `<option value="${s.id}" ${S.event.current===s.id?"selected":""}>${esc(s.label)} · ${esc(cfgOf(s).title)}</option>`).join("")}
+      </select></div>
+  </div>
+
+  <div class="panel">
+    <h3>Punkte nach Platzierung</h3>
+    <p class="sub">Gilt für Runden und für die Endplatzierung im Gruppensystem. Werte mit Komma trennen, erster Wert = 1. Platz.</p>
+    <input type="text" value="${S.pointsTable.join(", ")}" data-k="ptable">
+    <p class="mini" style="margin-top:8px">Aktuell: ${S.pointsTable.map((v,i)=>`${i+1}. = ${v}`).join(" · ")}</p>
+    <p class="mini">Im Gruppensystem wirkt eine Änderung sofort. Bei Rundenspielen bleiben bereits eingetragene Rundenpunkte stehen — wähle die Platzierung erneut, wenn sie neu berechnet werden soll.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Passwort</h3>
+    <div class="grid2">
+      <div class="field"><label class="f">Neues Passwort</label><input type="password" id="np1" placeholder="Neues Passwort"></div>
+      <div class="field"><label class="f">Wiederholen</label><input type="password" id="np2" placeholder="Wiederholen"></div>
+    </div>
+    <button class="btn gold" data-act="setpw">Passwort ändern</button>
+    <p class="mini" style="margin-top:10px">${sync.protected
+      ? "Achtung: Dieser Server prüft Änderungen gegen sein eigenes Passwort aus der Stack-Konfiguration (<code>WRITE_PASSWORD</code>). Was du hier änderst, gilt nur, wenn die Seite ohne Server läuft."
+      : "Das Passwort steht als Prüfsumme in den Daten dieser Seite. Wer die Datei liest, kommt daran vorbei — es hält Mitspieler ab, mehr nicht."}</p>
+  </div>
+
+  <div class="panel">
+    <h3>Sichern und übertragen</h3>
+    <p class="sub">${sync.on
+      ? "Diese Seite läuft mit Server-Sync: alle Geräte teilen denselben Stand, der Server speichert ihn dauerhaft. Der Export ist trotzdem sinnvoll — als Sicherung vor dem Abend."
+      : "Alle Daten liegen nur in diesem Browser. Für den Rechner am Beamer: hier exportieren, dort importieren."}</p>
+    <div class="row">
+      <button class="btn gold" data-act="export">Daten exportieren</button>
+      <label class="btn" style="cursor:pointer">Daten importieren
+        <input type="file" accept="application/json" style="display:none" id="importfile"></label>
+      <button class="btn danger" data-act="resetres">Nur Ergebnisse löschen</button>
+      <button class="btn danger" data-act="resetall">Alles zurücksetzen</button>
+    </div>
+    <p class="mini" style="margin-top:12px">${sync.on
+      ? "Ein Import überschreibt den Stand auf dem Server und damit für alle."
+      : "Mehrere Tabs im selben Browser gleichen sich automatisch ab: trag im einen Fenster ein, der Punktestand im anderen aktualisiert sich sofort."}</p>
+  </div>`;
+}
+
+/* ============================================================
+   Aktionen
+   ============================================================ */
+const ACTIONS = {
+  async unlock(){
+    const el = document.getElementById("pwin");
+    const pw = el ? el.value : "";
+    let ok = false;
+    if(sync.on && sync.protected){
+      // Der Server entscheidet — sein Passwort ist das, das wirklich zählt.
+      try{
+        const r = await fetch("api/auth", { method:"POST", headers:{ "X-Royalbeef-Auth": pw } });
+        const d = await r.json().catch(() => ({}));
+        ok = d.protected === false ? (hashPw(pw) === S.pw) : r.status === 200;
+      }catch(e){ ok = hashPw(pw) === S.pw; }
+    } else ok = hashPw(pw) === S.pw;
+
+    if(ok){ setAuth(pw); unlocked = true; setSync(sync.on ? "ok" : "local"); render(); }
+    else { toast("Passwort stimmt nicht"); if(el){ el.value = ""; el.focus(); } }
+  },
+  lock(){ unlocked = false; setAuth(""); render(); },
+  atab(d){ adminTab = d.k; render(); },
+  pickslot(d){ adminSlot = d.id; adminVariant = null; render(); },
+  pickvar(d){ adminVariant = d.k; render(); },
+
+  setvariant(d){
+    const slot = slotById(d.slot);
+    if(!slot) return;
+    slot.active = d.v;
+    adminVariant = null;
+    save(); render();
+    toast((d.v === "backup" ? "Backup" : "Hauptspiel") + " ist jetzt aktiv");
+  },
+
+  clearround(d){
+    const r = ensureRes(d.slot, d.v);
+    r.rounds[Number(d.r)] = { place:{}, points:{} };
+    save(); render();
+  },
+
+  clearbracket(d){
+    if(!confirm("Alle Ergebnisse dieses Turnierbaums löschen?")) return;
+    const r = ensureRes(d.slot, d.v);
+    r.b.scores = {}; r.b.finalRanking = [];
+    save(); render();
+  },
+  takeauto(d){
+    ensureRes(d.slot, d.v).b.finalRanking = bracketRanking(d.slot, d.v);
+    save(); render();
+    toast("Reihenfolge übernommen");
+  },
+  clearmanual(d){
+    ensureRes(d.slot, d.v).b.finalRanking = [];
+    save(); render();
+  },
+  moveup(d){ moveRank(d, -1); },
+  movedown(d){ moveRank(d, 1); },
+
+  shuffle(){
+    const hasScores = Object.values(S.results).some(sr =>
+      Object.values(sr).some(r => r.b && Object.keys(r.b.scores || {}).length));
+    if(hasScores && !confirm("In einem Turnierbaum stehen schon Ergebnisse. Neu auslosen verschiebt die Setzliste, die eingetragenen Partien passen dann nicht mehr dazu. Trotzdem auslosen?")) return;
+    for(let i=S.players.length-1;i>0;i--){
+      const j = Math.floor(Math.random() * (i+1));
+      const t = S.players[i]; S.players[i] = S.players[j]; S.players[j] = t;
+    }
+    save(); render();
+    toast("Neu ausgelost");
+  },
+
+  addslot(){
+    if(S.slots.length >= MAX_SLOTS){ toast("Mehr als " + MAX_SLOTS + " Spiele sind nicht vorgesehen"); return; }
+    const n = S.slots.length + 1;
+    S.slots.push({
+      id: uid("s"), label: "Spiel " + n, numeral: roman(n), weight: 1, active: "main",
+      main: variant({ title:"Neues Spiel", accent:"#5a3550",
+        tagline:"Titel, Artwork und Wertung trägst du hier ein." }),
+      backup: variant({ title:"Backup offen", accent:"#3a3550",
+        tagline:"Frei belegbar, falls das Hauptspiel nicht läuft." })
+    });
+    renumber();
+    const s = S.slots[S.slots.length-1];
+    ensureRes(s.id, "main"); ensureRes(s.id, "backup");
+    save(); render();
+    toast("Spiel hinzugefügt");
+  },
+  delslot(d){
+    const slot = slotById(d.slot); if(!slot) return;
+    if(!confirm(`„${slot.label}“ entfernen? Alle Ergebnisse dieses Spiels gehen verloren.`)) return;
+    S.slots = S.slots.filter(x => x.id !== d.slot);
+    delete S.results[d.slot];
+    if(S.event.current === d.slot) S.event.current = "";
+    if(adminSlot === d.slot) adminSlot = S.slots.length ? S.slots[0].id : "";
+    renumber(); save(); render();
+  },
+  slotup(d){ moveSlot(d.slot, -1); },
+  slotdown(d){ moveSlot(d.slot, 1); },
+
+  addplayer(){
+    if(S.players.length >= MAX_PLAYERS){ toast("Mehr als " + MAX_PLAYERS + " Spieler sind nicht vorgesehen"); return; }
+    S.players.push({ id:uid("p"), name:"Spieler " + (S.players.length + 1) });
+    save(); render();
+  },
+  delplayer(d){
+    if(S.players.length <= MIN_PLAYERS){ toast("Unter " + MIN_PLAYERS + " Spieler geht das Turnier nicht"); return; }
+    if(!confirm("Spieler wirklich entfernen? Ergebnisse dieses Spielers gehen verloren.")) return;
+    S.players = S.players.filter(p => p.id !== d.p);
+    Object.values(S.results).forEach(slotRes => Object.values(slotRes).forEach(r => {
+      (r.rounds||[]).forEach(rd => { delete rd.place[d.p]; delete rd.points[d.p]; });
+      if(r.b) r.b.finalRanking = (r.b.finalRanking||[]).filter(x => x !== d.p);
+    }));
+    save(); render();
+  },
+  pup(d){ movePlayer(d.p, -1); },
+  pdown(d){ movePlayer(d.p, 1); },
+
+  setpw(){
+    const a = document.getElementById("np1").value, b = document.getElementById("np2").value;
+    if(!a){ toast("Passwort darf nicht leer sein"); return; }
+    if(a !== b){ toast("Die beiden Eingaben sind nicht gleich"); return; }
+    S.pw = hashPw(a); save(); render();
+    toast("Passwort geändert");
+  },
+
+  export(){
+    const blob = new Blob([JSON.stringify(S, null, 2)], { type:"application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "royal-beef-" + new Date().toISOString().slice(0,10) + ".json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  },
+  resetres(){
+    if(!confirm("Alle eingetragenen Ergebnisse löschen? Spieler und Spiele bleiben.")) return;
+    S.results = {}; save(); render();
+    toast("Ergebnisse gelöscht");
+  },
+  resetall(){
+    if(!confirm("Wirklich alles zurücksetzen? Spieler, Spiele und Ergebnisse gehen verloren.")) return;
+    S = defaultState(); save(); render();
+    toast("Zurückgesetzt");
+  },
+
+  big(){ document.body.classList.toggle("big"); render(); },
+  fullscreen(){
+    if(document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+  }
+};
+
+function moveRank(d, dir){
+  const r = ensureRes(d.slot, d.v);
+  const list = r.b.finalRanking.length ? r.b.finalRanking.slice() : effectiveRanking(d.slot, d.v);
+  const i = Number(d.i), j = i + dir;
+  if(j < 0 || j >= list.length) return;
+  const tmp = list[i]; list[i] = list[j]; list[j] = tmp;
+  r.b.finalRanking = list;
+  save(); render();
+}
+function setPlayerCount(n){
+  n = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, n || MIN_PLAYERS));
+  while(S.players.length < n) S.players.push({ id:uid("p"), name:"Spieler " + (S.players.length + 1) });
+  while(S.players.length > n){
+    const gone = S.players.pop();
+    Object.values(S.results).forEach(sr => Object.values(sr).forEach(r => {
+      (r.rounds||[]).forEach(rd => { delete rd.place[gone.id]; delete rd.points[gone.id]; });
+      if(r.b) r.b.finalRanking = (r.b.finalRanking||[]).filter(x => x !== gone.id);
+    }));
+  }
+  save();
+}
+
+function moveSlot(id, dir){
+  const i = S.slots.findIndex(s => s.id === id), j = i + dir;
+  if(i < 0 || j < 0 || j >= S.slots.length) return;
+  const t = S.slots[i]; S.slots[i] = S.slots[j]; S.slots[j] = t;
+  renumber(); save(); render();
+}
+
+function movePlayer(pid, dir){
+  const i = S.players.findIndex(p => p.id === pid), j = i + dir;
+  if(i < 0 || j < 0 || j >= S.players.length) return;
+  const tmp = S.players[i]; S.players[i] = S.players[j]; S.players[j] = tmp;
+  save(); render();
+}
+
+/* ---------- Eingaben ---------- */
+function applyInput(el, doRender){
+  const d = el.dataset, k = d.k;
+  const val = el.type === "checkbox" ? el.checked : el.value;
+
+  if(k === "ev"){ S.event[d.f] = val; }
+
+  else if(k === "ptable"){
+    S.pointsTable = String(val).split(/[,;\s]+/).filter(x => x !== "").map(x => Number(x) || 0);
+    if(!S.pointsTable.length) S.pointsTable = [1];
+  }
+
+  else if(k === "player.name"){
+    const p = playerById(d.p); if(p) p.name = val;
+  }
+
+  else if(k === "slot"){
+    const s = slotById(d.slot); if(!s) return;
+    s[d.f] = d.f === "weight" ? (Number(val) || 0) : val;
+  }
+
+  else if(k === "cfg"){
+    const s = slotById(d.slot); if(!s) return;
+    const c = s[d.v];
+    c[d.f] = d.f === "rounds" ? Math.max(1, Math.min(12, Number(val) || 1)) : val;
+    if(d.f === "rounds") ensureRes(d.slot, d.v);
+  }
+
+  else if(k === "round.place"){
+    const r = ensureRes(d.slot, d.v), rd = r.rounds[Number(d.r)];
+    if(val === ""){ delete rd.place[d.p]; delete rd.points[d.p]; }
+    else { rd.place[d.p] = Number(val); rd.points[d.p] = tablePts(Number(val) - 1); }
+    doRender = true;
+  }
+
+  else if(k === "round.points"){
+    const r = ensureRes(d.slot, d.v), rd = r.rounds[Number(d.r)];
+    if(val === "") delete rd.points[d.p];
+    else rd.points[d.p] = Number(val) || 0;
+  }
+
+  else if(k === "br.score"){
+    const r = ensureRes(d.slot, d.v);
+    if(!r.b.scores[d.m]) r.b.scores[d.m] = { sa:"", sb:"" };
+    r.b.scores[d.m][d.f] = val === "" ? "" : Number(val);
+    doRender = true;
+  }
+
+  else if(k === "pcount"){
+    setPlayerCount(Number(val));
+    doRender = true;
+  }
+
+  else return;
+
+  save();
+  if(doRender) render();
+}
+
+/* ---------- Delegation ---------- */
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-act]");
+  if(!t || t.tagName === "INPUT") return;
+  const fn = ACTIONS[t.dataset.act];
+  if(fn){ e.preventDefault(); fn(t.dataset); }
+});
+document.addEventListener("keydown", e => {
+  if(e.key === "Enter" && e.target.id === "pwin"){ e.preventDefault(); ACTIONS.unlock(); }
+  const t = e.target.closest && e.target.closest(".tab[data-act]");
+  if(t && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); ACTIONS.setvariant(t.dataset); }
+});
+document.addEventListener("input", e => { if(e.target.dataset && e.target.dataset.k) applyInput(e.target, false); });
+document.addEventListener("change", e => {
+  if(e.target.id === "importfile"){
+    const f = e.target.files[0]; if(!f) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try{
+        const d = JSON.parse(fr.result);
+        if(!d || !Array.isArray(d.players)) throw 0;
+        S = mergeState(d); normalize();
+        save(); render(); toast("Daten importiert");
+      }catch(err){ toast("Datei konnte nicht gelesen werden"); }
+    };
+    fr.readAsText(f);
+    return;
+  }
+  if(e.target.dataset && e.target.dataset.k){
+    const k = e.target.dataset.k;
+    const needsRender = !(e.target.type === "text" || e.target.tagName === "TEXTAREA") || k === "cfg" || k === "ev" || k === "ptable" || k === "player.name";
+    applyInput(e.target, needsRender);
+  }
+});
+
+/* ---------- Start ---------- */
+normalize();
+render();
+initSync();
+</script>
+</body>
+</html>

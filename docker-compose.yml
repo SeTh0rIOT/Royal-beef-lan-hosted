@@ -1,0 +1,24 @@
+# Royal Beef LAN — Stack für Portainer, direkt aus dem Git-Repository.
+#
+# In Portainer unter "Add stack" die Methode "Repository" wählen und dort
+# WRITE_PASSWORD als Environment variable eintragen. So steht das Passwort
+# nirgends auf GitHub.
+
+services:
+  royalbeef:
+    build: .
+    image: royalbeef:latest
+    container_name: royalbeef
+    restart: unless-stopped
+    environment:
+      # Passwort für alle Änderungen. Zugleich das Admin-Passwort der Seite.
+      # Bleibt es leer, darf jeder schreiben — nur im eigenen LAN vertretbar.
+      WRITE_PASSWORD: ${WRITE_PASSWORD}
+      TZ: Europe/Berlin
+    volumes:
+      - royalbeef-data:/data
+    ports:
+      - "8087:8080"
+
+volumes:
+  royalbeef-data:
