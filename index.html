@@ -325,6 +325,8 @@ body.big .brm{width:196px}
 .syncdot.on{background:#57b84a;box-shadow:0 0 0 3px rgba(87,184,74,.18)}
 .syncdot.off{background:var(--red);box-shadow:0 0 0 3px rgba(216,56,44,.2)}
 .syncdot.idle{background:var(--gold-dim)}
+.credit{margin-top:8px;font-size:12px;color:var(--gold-dim);letter-spacing:.1em;text-transform:uppercase}
+.credit b{color:var(--gold);font-weight:700;letter-spacing:.14em}
 .foot{padding:44px 0 30px;color:var(--muted);font-size:13px;text-align:center}
 .toast{
   position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
@@ -356,6 +358,7 @@ body.big .brm{width:196px}
    ============================================================ */
 "use strict";
 
+const VERSION = "1.0.0";   // beim Ausliefern einer neuen Fassung hochzählen
 const KEY = "royalbeef.v1";
 const PW_SALT = "rb#";
 
@@ -752,7 +755,8 @@ function effectiveRanking(slotId, vk){
 function slotPoints(slot){
   const vk = slot.active, cfg = cfgOf(slot, vk);
   const base = cfg.mode === "bracket" ? bracketPoints(slot.id, vk) : roundPoints(slot.id, vk);
-  const w = Number(slot.weight) || 1;
+  const n = Number(slot.weight);
+  const w = Number.isFinite(n) ? Math.max(0, n) : 1;
   const out = {};
   S.players.forEach(p => out[p.id] = Math.round((base[p.id] || 0) * w * 100) / 100);
   return out;
@@ -829,7 +833,8 @@ function updateFoot(){
     auth:  ['<span class="syncdot off"></span>', "Server nimmt von hier keine Änderungen an — im Admin anmelden"],
     local: ['<span class="syncdot idle"></span>', "Nur dieser Browser — zum Übertragen Export/Import im Admin"]
   }[sync.status] || ["", ""];
-  f.innerHTML = `${esc(S.event.title)} · ${m[0]}${esc(m[1])} · <a href="#/admin" style="color:var(--gold)">Admin</a>`;
+  f.innerHTML = `${esc(S.event.title)} · ${m[0]}${esc(m[1])} · <a href="#/admin" style="color:var(--gold)">Admin</a>
+    <div class="credit">made by <b>EA</b> · v${VERSION}</div>`;
 }
 
 function render(opts){
@@ -1058,7 +1063,8 @@ function srcLabel(x, B){
 function brCard(m, R, edit, slotId, vk, x, y){
   const p = R.part[m.id], s = R.scores[m.id] || {};
   const st = R.state[m.id];
-  const cell = (f, v) => edit
+  const fixed = st === "bye" || st === "empty";   // hier gibt es nichts einzutragen
+  const cell = (f, v) => (edit && !fixed)
     ? `<input class="sc" type="number" value="${v===""||v==null?"":v}" data-k="br.score" data-f="${f}" data-slot="${slotId}" data-v="${vk}" data-m="${m.id}">`
     : `<span class="sc">${v===""||v==null?"·":v}</span>`;
   const row = (pid, ref, f) => {
@@ -1408,7 +1414,7 @@ function adminGames(){
       <div class="grid2">
         <div class="field"><label class="f">Bezeichnung im Menü</label>
           <input type="text" value="${esc(s.label)}" data-k="slot" data-f="label" data-slot="${s.id}"></div>
-        <div class="field"><label class="f">Punktefaktor (1 = normal, 2 = doppelt)</label>
+        <div class="field"><label class="f">Punktefaktor (1 = normal, 2 = doppelt, 0 = zählt nicht)</label>
           <input type="number" step="0.5" min="0" value="${s.weight}" data-k="slot" data-f="weight" data-slot="${s.id}"></div>
       </div>
       ${v("main")}${v("backup")}
@@ -1717,7 +1723,7 @@ function applyInput(el, doRender){
 
   else if(k === "slot"){
     const s = slotById(d.slot); if(!s) return;
-    s[d.f] = d.f === "weight" ? (Number(val) || 0) : val;
+    s[d.f] = d.f === "weight" ? Math.max(0, Number(val) || 0) : val;
   }
 
   else if(k === "cfg"){
