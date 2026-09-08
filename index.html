@@ -400,7 +400,7 @@ body.big .brm{width:196px}
    ============================================================ */
 "use strict";
 
-const VERSION = "1.2.0";   // beim Ausliefern einer neuen Fassung hochzählen
+const VERSION = "1.2.1";   // beim Ausliefern einer neuen Fassung hochzählen
 const KEY = "royalbeef.v1";
 const PW_SALT = "rb#";
 
@@ -1668,6 +1668,7 @@ function adminSettings(){
 
   <div class="panel">
     <h3>Sichern und übertragen</h3>
+    <p class="mini" style="margin-bottom:14px">„Spiele auf Vorgabe zurücksetzen“ holt die mitgelieferte Aufstellung samt Artwork zurück — nützlich nach einem Update, wenn der gespeicherte Stand noch die alten Spiele enthält. Spielernamen bleiben dabei erhalten.</p>
     <p class="sub">${sync.on
       ? "Diese Seite läuft mit Server-Sync: alle Geräte teilen denselben Stand, der Server speichert ihn dauerhaft. Der Export ist trotzdem sinnvoll — als Sicherung vor dem Abend."
       : "Alle Daten liegen nur in diesem Browser. Für den Rechner am Beamer: hier exportieren, dort importieren."}</p>
@@ -1676,6 +1677,7 @@ function adminSettings(){
       <label class="btn" style="cursor:pointer">Daten importieren
         <input type="file" accept="application/json" style="display:none" id="importfile"></label>
       <button class="btn danger" data-act="resetres">Nur Ergebnisse löschen</button>
+      <button class="btn danger" data-act="resetgames">Spiele auf Vorgabe zurücksetzen</button>
       <button class="btn danger" data-act="resetall">Alles zurücksetzen</button>
     </div>
     <p class="mini" style="margin-top:12px">${sync.on
@@ -1835,6 +1837,14 @@ const ACTIONS = {
     if(!confirm("Alle eingetragenen Ergebnisse löschen? Spieler und Spiele bleiben.")) return;
     S.results = {}; save(); render();
     toast("Ergebnisse gelöscht");
+  },
+  resetgames(){
+    if(!confirm("Die Spiele durch die mitgelieferte Aufstellung ersetzen? Spieler und Punktetabelle bleiben, alle eingetragenen Ergebnisse gehen verloren.")) return;
+    S.slots = defaultState().slots;
+    S.results = {};
+    S.event.current = "";
+    normalize(); save(); render();
+    toast("Spiele zurückgesetzt");
   },
   resetall(){
     if(!confirm("Wirklich alles zurücksetzen? Spieler, Spiele und Ergebnisse gehen verloren.")) return;
