@@ -400,7 +400,7 @@ body.big .brm{width:196px}
    ============================================================ */
 "use strict";
 
-const VERSION = "1.2.1";   // beim Ausliefern einer neuen Fassung hochzählen
+const VERSION = "1.2.2";   // beim Ausliefern einer neuen Fassung hochzählen
 const KEY = "royalbeef.v1";
 const PW_SALT = "rb#";
 
@@ -636,7 +636,11 @@ async function pollLoop(){
   if(unlocked && sync.hasLock && (++sync.beats % 10) === 0) claimLock(false);
   if(!sync.busy && !sync.timer){
     try{
+      const before = sync.rev;
       const d = await apiGet();
+      // Zwischenzeitlich selbst geschrieben oder eine Eingabe angefangen?
+      // Dann ist diese Antwort veraltet und darf nichts überschreiben.
+      if(sync.busy || sync.timer || sync.rev !== before){ setSync("ok"); return schedulePoll(); }
       sync.protected = !!d.protected;
       const ed = d.editor || {};
       const wasFree = sync.hasLock;
@@ -650,8 +654,10 @@ async function pollLoop(){
       setSync("ok");
     }catch(e){ setSync("error"); }
   }
-  setTimeout(pollLoop, 3000);
+  schedulePoll();
 }
+
+function schedulePoll(){ setTimeout(pollLoop, 3000); }
 
 /* Nach jedem Übernehmen eines fremden Stands geradeziehen:
    Nummerierung, erlaubte Spielerzahl, fehlende Ergebnis-Container. */
@@ -954,7 +960,14 @@ function updateFoot(){
 function render(opts){
   const toTop = !!(opts && opts.scroll);
   const y = window.scrollY;
-  const fk = toTop ? null : keyOf(document.activeElement);
+  const act = document.activeElement;
+  const fk = toTop ? null : keyOf(act);
+  // Cursor und Auswahl merken, sonst springt der Textcursor beim
+  // Neuaufbau an den Zeilenanfang.
+  let selA = null, selB = null;
+  if(fk && act && typeof act.selectionStart === "number"){
+    try{ selA = act.selectionStart; selB = act.selectionEnd; }catch(e){}
+  }
   const r = route();
   renderNav(r);
   if(r.view === "game")        app.innerHTML = viewGame(r.arg);
@@ -965,7 +978,12 @@ function render(opts){
   window.scrollTo(0,y);
   if(fk){
     const el = app.querySelector(fk);
-    if(el && el.focus) try{ el.focus({preventScroll:true}); }catch(e){ el.focus(); }
+    if(el && el.focus){
+      try{ el.focus({preventScroll:true}); }catch(e){ el.focus(); }
+      if(selA !== null && typeof el.setSelectionRange === "function"){
+        try{ el.setSelectionRange(selA, selB); }catch(e){}
+      }
+    }
   }
 }
 window.addEventListener("hashchange", () => render({scroll:true}));
