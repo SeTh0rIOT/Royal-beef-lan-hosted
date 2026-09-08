@@ -320,6 +320,48 @@ body.big .sbstage h1{font-size:104px}
 .brtitle{margin:6px 0 10px}
 body.big .brm{width:196px}
 
+.livebar{display:inline-flex;align-items:center;gap:12px;margin-top:22px;
+  padding:11px 20px;border-radius:999px;border:1px solid rgba(216,56,44,.55);
+  background:rgba(216,56,44,.14);transition:background .15s ease}
+.livebar:hover{background:rgba(216,56,44,.24)}
+.livebar .lk{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:#ffb8b2;font-weight:700}
+.livebar .ln{font-family:var(--display);font-size:20px;text-transform:uppercase}
+.livebar .lg{font-size:13px;color:var(--muted)}
+.slot.live{border-color:rgba(216,56,44,.6);box-shadow:var(--shadow),0 0 0 1px rgba(216,56,44,.3)}
+.nav a.live{color:#ffb8b2}
+.nav a.live.on{color:var(--ink)}
+
+.vswitch{margin-bottom:18px}
+.vlabel{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
+.vseg{display:flex;gap:10px;flex-wrap:wrap}
+.vopt{flex:1;min-width:210px;text-align:left;cursor:pointer;padding:12px 15px;border-radius:11px;
+  border:1px solid var(--line);background:var(--ink);color:var(--bone);transition:border-color .15s ease,background .15s ease}
+.vopt:hover{border-color:var(--line-hard)}
+.vopt.on{border-color:var(--gold);background:rgba(230,185,92,.12)}
+.vopt .vk{display:block;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.vopt.on .vk{color:var(--gold)}
+.vopt .vn{display:block;font-family:var(--display);font-size:20px;text-transform:uppercase;margin-top:3px}
+.vopt .vm{display:block;font-size:13px;color:var(--muted)}
+
+.slotcard{padding:0;overflow:hidden}
+.slothead{display:flex;align-items:center;gap:10px;padding-right:16px}
+.slotmain{flex:1;display:flex;align-items:center;gap:14px;padding:16px 8px 16px 20px;background:transparent;
+  border:0;cursor:pointer;text-align:left;color:var(--bone);border-radius:12px}
+.slotmain:hover{background:rgba(230,185,92,.05)}
+.slotmain .chev{color:var(--gold-dim);width:14px}
+.slotmain .sn{font-family:var(--display);font-size:15px;letter-spacing:.2em;color:var(--gold);min-width:38px}
+.slotmain .st{display:block;font-family:var(--display);font-size:21px;text-transform:uppercase;line-height:1.05}
+.slotmain .mini{display:block}
+.slotacts{display:flex;gap:6px;flex:none}
+.slotbody{padding:0 20px 20px;border-top:1px solid var(--line)}
+.slotbody > .vswitch{margin-top:18px}
+.slotbody .btn.danger{margin-top:6px}
+
+.lockbar{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  border:1px solid rgba(216,56,44,.55);background:rgba(216,56,44,.14);
+  border-radius:12px;padding:14px 18px;margin-bottom:20px}
+.lockbar b{color:#ffd7d3}
+
 .empty{text-align:center;padding:44px 20px;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
 .syncdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:middle}
 .syncdot.on{background:#57b84a;box-shadow:0 0 0 3px rgba(87,184,74,.18)}
@@ -358,7 +400,7 @@ body.big .brm{width:196px}
    ============================================================ */
 "use strict";
 
-const VERSION = "1.0.0";   // beim Ausliefern einer neuen Fassung hochzählen
+const VERSION = "1.1.0";   // beim Ausliefern einer neuen Fassung hochzählen
 const KEY = "royalbeef.v1";
 const PW_SALT = "rb#";
 
@@ -468,7 +510,18 @@ function save(broadcast){
    Geräte denselben Stand. Fehlt der Endpunkt (Datei geöffnet,
    GitHub Pages, nginx), läuft alles wie bisher nur lokal.
    ============================================================ */
-const sync = { on:false, rev:0, timer:null, busy:false, status:"local", protected:false };
+const sync = { on:false, rev:0, timer:null, busy:false, status:"local", protected:false,
+               hasLock:true, editorAge:0, beats:0 };
+
+/* Kennung dieses Geräts. Der Server erlaubt immer nur einem Gerät zu
+   schreiben, damit sich zwei Admins nicht gegenseitig überschreiben. */
+const clientId = (() => {
+  try{
+    let v = sessionStorage.getItem("rb.cid");
+    if(!v){ v = "c" + Math.random().toString(36).slice(2,10) + Date.now().toString(36); sessionStorage.setItem("rb.cid", v); }
+    return v;
+  }catch(e){ return "c" + Math.random().toString(36).slice(2,10); }
+})();
 
 /* Das im Admin eingegebene Passwort wird für Schreibzugriffe mitgeschickt.
    Es bleibt in dieser Sitzung, nicht dauerhaft auf der Platte. */
@@ -486,7 +539,47 @@ async function apiGet(){
 
 function setSync(st){ if(sync.status !== st){ sync.status = st; updateFoot(); } }
 
-async function pushNow(){
+async function claimLock(takeover){
+  if(!sync.on) return true;
+  try{
+    const r = await fetch("api/lock", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "X-Royalbeef-Auth": authPw },
+      body: JSON.stringify({ client: clientId, takeover: !!takeover })
+    });
+    if(r.ok){ sync.hasLock = true; return true; }
+    if(r.status === 409){
+      const d = await r.json().catch(() => ({}));
+      sync.hasLock = false; sync.editorAge = d.age || 0;
+      return false;
+    }
+    sync.hasLock = false; return false;
+  }catch(e){ return false; }
+}
+
+async function releaseLock(){
+  if(!sync.on) return;
+  try{
+    await fetch("api/unlock", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "X-Royalbeef-Auth": authPw },
+      body: JSON.stringify({ client: clientId })
+    });
+  }catch(e){}
+  sync.hasLock = true;   // ohne Server gilt wieder alles als erlaubt
+}
+
+/* Serverstand übernehmen, ohne eigene Änderungen zu behalten. */
+async function adoptServer(){
+  try{
+    const d = await apiGet();
+    sync.rev = d.rev; sync.protected = !!d.protected;
+    if(d.state){ S = mergeState(d.state); normalize(); rawSet(JSON.stringify(S)); }
+    render();
+  }catch(e){}
+}
+
+async function pushNow(retry){
   if(!sync.on) return;
   clearTimeout(sync.timer); sync.timer = null;
   sync.busy = true;
@@ -494,9 +587,16 @@ async function pushNow(){
     const r = await fetch("api/state", {
       method:"PUT",
       headers:{ "Content-Type":"application/json", "X-Royalbeef-Auth": authPw },
-      body: JSON.stringify({ rev: sync.rev, state: S })
+      body: JSON.stringify({ rev: sync.rev, client: clientId, state: S })
     });
-    if(r.status === 401){
+    if(r.status === 423){
+      // Ein anderes Gerät bearbeitet gerade. Nichts überschreiben.
+      sync.hasLock = false;
+      const d = await r.json().catch(() => ({}));
+      sync.editorAge = d.age || 0;
+      await adoptServer();
+      toast("Ein anderes Gerät bearbeitet gerade — Änderung nicht übernommen");
+    } else if(r.status === 401){
       // Ohne Schreibrecht darf nichts hängen bleiben: Serverstand zurückholen.
       setSync("auth");
       try{
@@ -507,6 +607,12 @@ async function pushNow(){
       toast("Dafür braucht es das Admin-Passwort");
     } else if(r.status === 409){
       const d = await r.json();
+      if(sync.hasLock && !retry){
+        // Wir haben das Bearbeitungsrecht: eigener Stand gilt, nur die
+        // Revision war veraltet. Einmal mit der neuen Nummer erneut senden.
+        sync.rev = d.rev; sync.busy = false;
+        return pushNow(true);
+      }
       sync.rev = d.rev; S = mergeState(d.state); normalize();
       rawSet(JSON.stringify(S));
       setSync("ok"); render();
@@ -526,10 +632,17 @@ function schedulePush(){
 
 async function pollLoop(){
   if(!sync.on) return;
+  // Lebenszeichen, damit das Bearbeitungsrecht nicht abläuft (alle ~30 s)
+  if(unlocked && sync.hasLock && (++sync.beats % 10) === 0) claimLock(false);
   if(!sync.busy && !sync.timer){
     try{
       const d = await apiGet();
       sync.protected = !!d.protected;
+      const ed = d.editor || {};
+      const wasFree = sync.hasLock;
+      if(unlocked && ed.id && ed.id !== clientId){ sync.hasLock = false; sync.editorAge = ed.age || 0; }
+      if(unlocked && !ed.id) sync.hasLock = true;
+      if(wasFree !== sync.hasLock && route().view === "admin") render();
       if(d.rev !== sync.rev && d.state){
         sync.rev = d.rev; S = mergeState(d.state); normalize();
         rawSet(JSON.stringify(S)); render();
@@ -809,7 +922,8 @@ function renderNav(r){
     const on = key === "home" ? r.view === "home"
       : key.startsWith("game:") ? (r.view === "game" && r.arg === key.slice(5))
       : r.view === key;
-    return `<a href="${href}" class="${on?"on":""}">${esc(label)}</a>`;
+    const live = key.startsWith("game:") && S.event.current === key.slice(5);
+    return `<a href="${href}" class="${on?"on":""}${live?" live":""}">${live?`<span class="dot"></span>`:``}${esc(label)}</a>`;
   }).join("");
   updateFoot();
 }
@@ -867,8 +981,9 @@ function viewHome(){
   const cards = S.slots.map(s => {
     const cfg = cfgOf(s), isBackup = s.active === "backup";
     const live = S.event.current === s.id;
+    void live;
     const done = Object.values(slotPoints(s)).some(v => v > 0);
-    return `<a class="slot" href="#/game/${s.id}">
+    return `<a class="slot ${live?"live":""}" href="#/game/${s.id}">
       ${artHTML(cfg)}
       <div class="scrim"></div>
       <div class="body">
@@ -890,6 +1005,16 @@ function viewHome(){
       </svg>
       <h1>${esc(S.event.title)}</h1>
       <p class="lede">${esc(S.event.subtitle)}</p>
+      ${(() => {
+        const ls = S.event.current ? slotById(S.event.current) : null;
+        if(!ls) return ``;
+        return `<a class="livebar" href="#/game/${ls.id}">
+          <span class="dot"></span>
+          <span class="lk">Jetzt läuft</span>
+          <span class="ln">${esc(ls.numeral)} · ${esc(cfgOf(ls).title || ls.label)}</span>
+          <span class="lg">ansehen →</span>
+        </a>`;
+      })()}
       <div class="row" style="margin-top:22px">
         <a class="btn gold" href="#/punkte">Punktestand ansehen</a>
         ${S.slots.length ? `<a class="btn" href="#/game/${S.slots[0].id}">Zu ${esc(S.slots[0].label)}</a>` : ``}
@@ -984,6 +1109,7 @@ function viewGame(slotId){
       <div class="scrim"></div>
       <div class="body">
         <div class="numeral">${esc(slot.numeral)} · ${esc(slot.label)}${vk === "backup" ? " · Backup" : ""}</div>
+        ${S.event.current === slot.id ? `<div style="margin-bottom:10px"><span class="badge red"><span class="dot"></span>Läuft gerade</span></div>` : ``}
         ${cfg.appid && !cfg.art ? `<img class="gamelogo" alt="" src="${logoUrl(cfg.appid)}" onerror="this.remove()">` : ``}
         <h1>${esc(cfg.title || "Noch offen")}</h1>
         <p class="sub" style="max-width:60ch;margin:8px 0 0">${esc(cfg.tagline)}</p>
@@ -1226,7 +1352,7 @@ function viewBoard(){
    Admin
    ============================================================ */
 let adminSlot = "s1";
-let adminVariant = null; // null = aktive Variante
+const openSlots = new Set();   // aufgeklappte Spiele im Reiter „Spiele“
 
 function viewAdmin(){
   if(!unlocked){
@@ -1241,12 +1367,37 @@ function viewAdmin(){
   const tabs = [["results","Ergebnisse"],["games","Spiele"],["players","Spieler"],["settings","Einstellungen"]];
   return `<div class="wrap">
     <div style="height:26px"></div>
-    <div class="spread"><h1>Admin</h1><button class="btn" data-act="lock">Sperren</button></div>
+    <div class="spread"><h1>Admin</h1><button class="btn" data-act="lock">Abmelden</button></div>
     <hr class="rule">
+    ${(sync.on && !sync.hasLock) ? `<div class="lockbar">
+      <div>
+        <b>Ein anderes Gerät bearbeitet gerade.</b>
+        <div class="mini">Zuletzt aktiv vor ${sync.editorAge} Sekunden. Änderungen von hier werden abgelehnt, damit nichts überschrieben wird.</div>
+      </div>
+      <button class="btn gold" data-act="takeover">Bearbeitung übernehmen</button>
+    </div>` : ``}
     <div class="tabbar mt">${tabs.map(([k,l]) =>
       `<button class="${adminTab===k?"on":""}" data-act="atab" data-k="${k}">${l}</button>`).join("")}</div>
     ${adminTab==="results" ? adminResults() : adminTab==="games" ? adminGames() : adminTab==="players" ? adminPlayers() : adminSettings()}
     <div style="height:50px"></div>
+  </div>`;
+}
+
+/* Ein Umschalter statt zweier Knopfreihen: Was gespielt wird, wird gewertet. */
+function variantSwitch(slot){
+  return `<div class="vswitch">
+    <div class="vlabel">Gespielt wird gerade</div>
+    <div class="vseg">
+      ${["main","backup"].map(k => {
+        const c = slot[k], on = slot.active === k;
+        return `<button class="vopt ${on?"on":""}" data-act="setvariant" data-slot="${slot.id}" data-v="${k}">
+          <span class="vk">${k === "main" ? "Hauptspiel" : "Backup"}</span>
+          <span class="vn">${esc(c.title || "nicht belegt")}</span>
+          <span class="vm">${c.mode === "bracket" ? "Double Elimination" : (c.rounds||3) + " Runden"}</span>
+        </button>`;
+      }).join("")}
+    </div>
+    <p class="mini">Das ausgewählte Spiel zählt für den Punktestand. Die Ergebnisse des anderen bleiben gespeichert und kommen beim Zurückschalten wieder.</p>
   </div>`;
 }
 
@@ -1256,23 +1407,27 @@ function adminResults(){
   if(!S.slots.length) return `<div class="empty">Noch keine Spiele angelegt — Reiter „Spiele“.</div>`;
   const slot = slotById(adminSlot) || S.slots[0];
   adminSlot = slot.id;
-  const vk = adminVariant || slot.active;
+  const vk = slot.active;
   const cfg = cfgOf(slot, vk);
+  const live = S.event.current === slot.id;
 
-  const picker = `<div class="row" style="margin-bottom:16px">${S.slots.map(s =>
-    `<button class="btn sm ${s.id===slot.id?"gold":""}" data-act="pickslot" data-id="${s.id}">${esc(s.numeral)} · ${esc(cfgOf(s).title||s.label)}</button>`).join("")}</div>`;
-
-  const vpick = `<div class="row" style="margin-bottom:6px">
-    ${["main","backup"].map(k => `<button class="btn sm ${vk===k?"gold":""}" data-act="pickvar" data-k="${k}">
-      ${k==="main"?"Hauptspiel":"Backup"}: ${esc(slot[k].title||"—")}</button>`).join("")}
-    ${vk !== slot.active ? `<span class="badge plain">wird gerade nicht gewertet</span>`
-      : `<span class="badge">wird gewertet</span>`}</div>
-  <p class="mini" style="margin-bottom:16px">Aktiv gewertet wird: <b>${esc(cfgOf(slot, slot.active).title || "—")}</b>.
-    <button class="btn sm" data-act="setvariant" data-slot="${slot.id}" data-v="${vk}">Diese Variante aktiv schalten</button></p>`;
+  const picker = `<div class="row" style="margin-bottom:18px">${S.slots.map(s =>
+    `<button class="btn sm ${s.id===slot.id?"gold":""}" data-act="pickslot" data-id="${s.id}">
+      ${S.event.current===s.id ? `<span class="dot"></span>` : ``}${esc(s.numeral)} · ${esc(cfgOf(s).title||s.label)}</button>`).join("")}</div>`;
 
   return `<div class="panel">
-    <h3>${esc(slot.label)} — ${esc(cfg.title || "unbenannt")}</h3>
-    ${picker}${vpick}
+    <div class="spread" style="margin-bottom:6px">
+      <h3>${esc(slot.label)}</h3>
+      <button class="btn sm ${live?"gold":""}" data-act="setlive" data-slot="${slot.id}">
+        ${live ? "✓ Läuft gerade" : "Als „läuft gerade“ markieren"}</button>
+    </div>
+    <p class="mini" style="margin-bottom:16px">Die Markierung erscheint auf der Startseite und im Punktestand, damit alle sehen, welches Spiel dran ist.</p>
+    ${picker}
+    ${variantSwitch(slot)}
+  </div>
+
+  <div class="panel">
+    <h3>Ergebnisse — ${esc(cfg.title || "unbenannt")}</h3>
     ${cfg.mode === "bracket" ? editorBracket(slot, vk) : editorRounds(slot, vk)}
   </div>`;
 }
@@ -1366,7 +1521,7 @@ function adminGames(){
         <span class="mini">${S.slots.length} von höchstens ${MAX_SLOTS}</span>
         <button class="btn sm gold" data-act="addslot" ${S.slots.length>=MAX_SLOTS?"disabled":""}>Spiel hinzufügen</button>
       </div></div>
-    <p class="mini">Jedes Spiel hat ein Hauptspiel und ein Backup, beide mit eigenem Titel, Artwork und eigener Wertung. Die Reihenfolge hier bestimmt die Nummerierung im Menü und auf der Startseite.</p>
+    <p class="mini">Zum Bearbeiten auf ein Spiel klicken. Jedes hat ein Hauptspiel und ein Backup, beide mit eigenem Titel, Artwork und eigener Wertung. Die Reihenfolge bestimmt die Nummerierung im Menü.</p>
   </div>`;
 
   return head + S.slots.map((s, si) => {
@@ -1375,7 +1530,7 @@ function adminGames(){
       return `<div class="panel" style="background:var(--ink)">
         <div class="spread" style="margin-bottom:12px">
           <h3>${k==="main"?"Hauptspiel":"Backup"}</h3>
-          <button class="btn sm ${s.active===k?"gold":""}" data-act="setvariant" data-slot="${s.id}" data-v="${k}">${s.active===k?"aktiv":"aktiv schalten"}</button>
+          ${s.active===k ? `<span class="badge">wird gespielt</span>` : ``}
         </div>
         <div class="grid2">
           <div class="field"><label class="f">Titel</label>
@@ -1402,22 +1557,36 @@ function adminGames(){
           <textarea data-k="cfg" data-f="rules" data-slot="${s.id}" data-v="${k}">${esc(c.rules)}</textarea></div>
       </div>`;
     };
-    return `<div class="panel">
-      <div class="spread" style="margin-bottom:14px">
-        <h3>${esc(s.numeral)} · ${esc(cfgOf(s).title || s.label)}</h3>
-        <div class="row">
-          <button class="btn sm" data-act="slotup" data-slot="${s.id}" ${si===0?"disabled":""}>▲</button>
-          <button class="btn sm" data-act="slotdown" data-slot="${s.id}" ${si===S.slots.length-1?"disabled":""}>▼</button>
-          <button class="btn sm danger" data-act="delslot" data-slot="${s.id}">Spiel entfernen</button>
+    const open = openSlots.has(s.id);
+    const cfg = cfgOf(s);
+    return `<div class="panel slotcard">
+      <div class="slothead">
+        <button class="slotmain" data-act="toggleslot" data-slot="${s.id}">
+          <span class="chev">${open ? "▾" : "▸"}</span>
+          <span class="sn">${esc(s.numeral)}</span>
+          <span class="grow">
+            <span class="st">${esc(cfg.title || s.label)}</span>
+            <span class="mini">${esc(s.label)} · ${cfg.mode === "bracket" ? "Double Elimination" : (cfg.rounds||3) + " Runden"}${
+              s.active === "backup" ? " · Backup läuft" : ""}${Number(s.weight)!==1 ? ` · Faktor ${s.weight}` : ""}</span>
+          </span>
+          ${S.event.current === s.id ? `<span class="badge red"><span class="dot"></span>läuft</span>` : ``}
+        </button>
+        <span class="slotacts">
+          <button class="btn sm" data-act="slotup" data-slot="${s.id}" ${si===0?"disabled":""} title="nach oben">▲</button>
+          <button class="btn sm" data-act="slotdown" data-slot="${s.id}" ${si===S.slots.length-1?"disabled":""} title="nach unten">▼</button>
+        </span>
+      </div>
+      ${open ? `<div class="slotbody">
+        ${variantSwitch(s)}
+        <div class="grid2">
+          <div class="field"><label class="f">Bezeichnung im Menü</label>
+            <input type="text" value="${esc(s.label)}" data-k="slot" data-f="label" data-slot="${s.id}"></div>
+          <div class="field"><label class="f">Punktefaktor (1 = normal, 2 = doppelt, 0 = zählt nicht)</label>
+            <input type="number" step="0.5" min="0" value="${s.weight}" data-k="slot" data-f="weight" data-slot="${s.id}"></div>
         </div>
-      </div>
-      <div class="grid2">
-        <div class="field"><label class="f">Bezeichnung im Menü</label>
-          <input type="text" value="${esc(s.label)}" data-k="slot" data-f="label" data-slot="${s.id}"></div>
-        <div class="field"><label class="f">Punktefaktor (1 = normal, 2 = doppelt, 0 = zählt nicht)</label>
-          <input type="number" step="0.5" min="0" value="${s.weight}" data-k="slot" data-f="weight" data-slot="${s.id}"></div>
-      </div>
-      ${v("main")}${v("backup")}
+        ${v("main")}${v("backup")}
+        <button class="btn sm danger" data-act="delslot" data-slot="${s.id}">Dieses Spiel entfernen</button>
+      </div>` : ``}
     </div>`;
   }).join("");
 }
@@ -1474,11 +1643,7 @@ function adminSettings(){
         ${[6,7,8].map(n => `<option value="${n}" ${S.players.length===n?"selected":""}>${n} Spieler</option>`).join("")}
       </select>
       <p class="mini" style="margin-top:6px">Weniger Spieler entfernt die letzten aus der Liste samt ihrer Ergebnisse. Der Turnierbaum hat immer acht Plätze; bei 6 oder 7 Spielern bekommen die oberen Setzköpfe ein Freilos.</p></div>
-    <div class="field" style="margin-bottom:0"><label class="f">Läuft gerade</label>
-      <select data-k="ev" data-f="current">
-        <option value="">— nichts markiert —</option>
-        ${S.slots.map(s => `<option value="${s.id}" ${S.event.current===s.id?"selected":""}>${esc(s.label)} · ${esc(cfgOf(s).title)}</option>`).join("")}
-      </select></div>
+
   </div>
 
   <div class="panel">
@@ -1536,19 +1701,34 @@ const ACTIONS = {
       }catch(e){ ok = hashPw(pw) === S.pw; }
     } else ok = hashPw(pw) === S.pw;
 
-    if(ok){ setAuth(pw); unlocked = true; setSync(sync.on ? "ok" : "local"); render(); }
+    if(ok){
+      setAuth(pw); unlocked = true; setSync(sync.on ? "ok" : "local");
+      await claimLock(false);
+      render();
+    }
     else { toast("Passwort stimmt nicht"); if(el){ el.value = ""; el.focus(); } }
   },
-  lock(){ unlocked = false; setAuth(""); render(); },
+  async lock(){ await releaseLock(); unlocked = false; setAuth(""); render(); },
+
+  async takeover(){
+    if(!confirm("Die Bearbeitung von diesem Gerät übernehmen? Das andere Gerät kann dann nichts mehr eintragen.")) return;
+    await adoptServer();                 // erst den aktuellen Stand holen
+    const ok = await claimLock(true);
+    render();
+    toast(ok ? "Bearbeitung übernommen" : "Übernahme fehlgeschlagen");
+  },
   atab(d){ adminTab = d.k; render(); },
-  pickslot(d){ adminSlot = d.id; adminVariant = null; render(); },
-  pickvar(d){ adminVariant = d.k; render(); },
+  pickslot(d){ adminSlot = d.id; render(); },
+  toggleslot(d){ openSlots.has(d.slot) ? openSlots.delete(d.slot) : openSlots.add(d.slot); render(); },
+  setlive(d){
+    S.event.current = (S.event.current === d.slot) ? "" : d.slot;
+    save(); render();
+  },
 
   setvariant(d){
     const slot = slotById(d.slot);
     if(!slot) return;
     slot.active = d.v;
-    adminVariant = null;
     save(); render();
     toast((d.v === "backup" ? "Backup" : "Hauptspiel") + " ist jetzt aktiv");
   },
