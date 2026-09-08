@@ -400,7 +400,7 @@ body.big .brm{width:196px}
    ============================================================ */
 "use strict";
 
-const VERSION = "1.1.0";   // beim Ausliefern einer neuen Fassung hochzählen
+const VERSION = "1.2.0";   // beim Ausliefern einer neuen Fassung hochzählen
 const KEY = "royalbeef.v1";
 const PW_SALT = "rb#";
 
@@ -422,7 +422,7 @@ function defaultState(){
   return {
     event:{
       title:"Royal Beef — LAN 2026",
-      subtitle:"Vier Spiele, drei Backups, ein Sieger. Wer am Ende die meisten Punkte hat, nimmt die Krone mit nach Hause.",
+      subtitle:"Vier Spiele, vier Backups, ein Sieger. Wer am Ende die meisten Punkte hat, nimmt die Krone mit nach Hause.",
       current:""
     },
     pw: hashPw("muhkuhmuh"),
@@ -432,37 +432,37 @@ function defaultState(){
       {id:"p4",name:"Spieler 4"},{id:"p5",name:"Spieler 5"},{id:"p6",name:"Spieler 6"}
     ],
     slots:[
-      { id:"s1", label:"Spiel 1", numeral:"I", weight:1, active:"main",
-        main: variant({title:"Soldat", appid:"638490", mode:"rounds", rounds:3, accent:"#c2472a",
-          tagline:"2D-Deathmatch mit Jetpack, Blut und viel zu vielen Granaten.",
-          rules:"Drei Runden Capture the Flag oder Deathmatch. Nach jeder Runde wird die Platzierung eingetragen."}),
-        backup: variant({title:"Trackmania", appid:"2225070", mode:"rounds", rounds:3, accent:"#2f7fd8",
-          tagline:"Strecke, Stoppuhr, Nervenzusammenbruch. Wiederholen bis es sitzt.",
-          rules:"Drei Strecken, pro Strecke zählt die Bestzeit. Schnellste Zeit gewinnt die Runde."}) },
-
-      { id:"s2", label:"Spiel 2", numeral:"II", weight:1, active:"main",
-        main: variant({title:"Descenders Next", appid:"2375530", mode:"rounds", rounds:3, accent:"#3aa6bd",
+      { id:"s1", label:"Racing", numeral:"I", weight:1, active:"main",
+        main: variant({title:"Descenders Next", appid:"2375530", mode:"rounds", rounds:3, accent:"#2fa8b8",
           tagline:"Board statt Bremse. Bergab, bis jemand im Baum hängt.",
-          rules:"Drei Läufe. Gewertet wird pro Lauf die erreichte Rep bzw. die Zielzeit."}),
-        backup: variant({title:"SpeedRunners 2", appid:"3183760", mode:"rounds", rounds:3, accent:"#e0a12f",
-          tagline:"Acht rennen, sieben fliegen aus dem Bild. Der Feuerring frisst sich von hinten durch.",
-          rules:"Drei Rennen. Pro Rennen zählt die Platzierung, wer zuletzt übrig bleibt gewinnt die Runde."}) },
+          rules:"Drei Läufe. Pro Lauf zählt die Platzierung im Ziel."}),
+        backup: variant({title:"Trackmania", appid:"2225070", mode:"rounds", rounds:3, accent:"#2f6fd8",
+          tagline:"Strecke, Stoppuhr, Nervenzusammenbruch. Wiederholen bis es sitzt.",
+          rules:"Drei Strecken, pro Strecke zählt die Bestzeit."}) },
 
-      { id:"s3", label:"Spiel 3", numeral:"III", weight:1, active:"main",
-        main: variant({title:"Mortal Kombat 1", appid:"1971870", mode:"bracket", rounds:3, accent:"#a8271f",
-          tagline:"1 gegen 1, Best of 3, keine Ausreden.",
-          rules:"Gruppenphase Jeder-gegen-Jeden, Best of 3. Die besten zwei je Gruppe ziehen ins Halbfinale ein."}),
-        backup: variant({title:"Worms Armageddon", appid:"217200", mode:"bracket", rounds:3, accent:"#6a9a2f",
-          tagline:"Der Klassiker. Rundenbasiert, hinterhältig, und irgendwann kommt die Heilige Handgranate.",
-          rules:"1 gegen 1 im Turnierbaum, ein Team pro Spieler. Wer alle gegnerischen Würmer versenkt, kommt weiter."}) },
-
-      { id:"s4", label:"Spiel 4", numeral:"IV", weight:1, active:"main",
-        main: variant({title:"Shooter (noch offen)", appid:"", mode:"rounds", rounds:3, accent:"#6b6f2a",
-          tagline:"Steht noch nicht fest. Titel, Artwork und Wertung trägst du im Admin nach.",
-          rules:"Modus im Admin festlegen: Runden oder Double Elimination."}),
+      { id:"s2", label:"1 gegen 1", numeral:"II", weight:1, active:"main",
+        main: variant({title:"Mortal Kombat 1", appid:"1971870", mode:"bracket", rounds:3, accent:"#b32a1c",
+          tagline:"Einer gegen einen, Best of drei, keine Ausreden.",
+          rules:"Turnierbaum mit doppelter Chance. Jede Partie Best of 3."}),
         backup: variant({title:"TRON 2.0", appid:"327740", mode:"bracket", rounds:3, accent:"#28b6d6",
           tagline:"Disc Arena. Der Klassiker, der auf jeder Möhre läuft.",
-          rules:"Disc-Arena 1 gegen 1 im Turnierbaum."}) }
+          rules:"Disc-Arena 1 gegen 1 im Turnierbaum."}) },
+
+      { id:"s3", label:"2D", numeral:"III", weight:1, active:"main",
+        main: variant({title:"Soldat", appid:"638490", mode:"rounds", rounds:3, accent:"#c2562a",
+          tagline:"Zweidimensional, blutig, und immer eine Granate zu viel.",
+          rules:"Drei Runden Deathmatch oder Capture the Flag."}),
+        backup: variant({title:"SpeedRunners 2", appid:"3183760", mode:"rounds", rounds:3, accent:"#e8a91f",
+          tagline:"Alle rennen, einer fliegt aus dem Bild. Der Rest lacht.",
+          rules:"Drei Rennen. Wer zuletzt im Bild bleibt, gewinnt die Runde."}) },
+
+      { id:"s4", label:"Shooter", numeral:"IV", weight:1, active:"main",
+        main: variant({title:"FragPunk", appid:"2943650", mode:"rounds", rounds:3, accent:"#d92a7a",
+          tagline:"5 gegen 5 mit Splitterkarten, die jede Runde die Regeln umschreiben.",
+          rules:"Drei Runden. Gewertet wird die Platzierung nach Frags."}),
+        backup: variant({title:"Unreal Tournament 2004", appid:"13230", mode:"rounds", rounds:3, accent:"#c2621c",
+          tagline:"Arena-Shooter alter Schule. Shock Combo oder gar nicht.",
+          rules:"Drei Runden Deathmatch, gewertet nach Frags."}) }
     ],
     results:{}
   };
